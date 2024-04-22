@@ -48,3 +48,8 @@ def new_account(db, username, password):
     
     except ValueError:
         return 0
+    
+def getuserlist(db):
+    db.changedoc("credentails")
+    userlist = list(db.data.keys())
+    return userlist
