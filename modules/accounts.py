@@ -29,7 +29,6 @@ def new_account(db, username, password):
     try:
         db.changedoc('credentials')
         data = db.data
-        print(data)
 
         if username in data:
             raise ValueError('Username already exists.')
@@ -50,7 +49,7 @@ def new_account(db, username, password):
         return 0
     
 def getuserlist(db):
-    db.changedoc("credentails")
+    db.changedoc("credentials")
     userlist = list(db.data.keys())
     return userlist
 

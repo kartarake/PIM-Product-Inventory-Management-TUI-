@@ -80,8 +80,11 @@ class kardb:
         query = f"""select * from {self.docname}"""
         self.mycursor.execute(query)
 
-        data = self.mycursor.fetchall()[0]
-        print(data)
+        try:
+            data = self.mycursor.fetchall()[0]
+        except Exception:
+            data = {}
+            
         if data == tuple():
             data = {}
         else:
