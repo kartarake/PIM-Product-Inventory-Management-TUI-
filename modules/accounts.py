@@ -53,3 +53,17 @@ def getuserlist(db):
     db.changedoc("credentails")
     userlist = list(db.data.keys())
     return userlist
+
+def doespassmatch(db, provided_username, provided_password):
+    db.changedoc("credentials")
+    data = db.data
+
+    if not(provided_username in getuserlist()):
+        raise ValueError("Username not in data")
+    else:
+        pass
+
+    password = data[provided_username]
+    salt = data[provided_username]
+
+    return verifyhash(password, provided_password, salt)
