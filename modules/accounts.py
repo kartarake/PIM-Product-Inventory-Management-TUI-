@@ -26,6 +26,7 @@ def verifyhash(stored_password, provided_password, salt):
         return False
     
 def new_account(db, username, password):
+    # use this to create new account in db.
     try:
         db.changedoc('credentials')
         data = db.data
@@ -49,11 +50,13 @@ def new_account(db, username, password):
         return 0
     
 def getuserlist(db):
+    # returns a list of all usernames.
     db.changedoc("credentials")
     userlist = list(db.data.keys())
     return userlist
 
 def doespassmatch(db, provided_username, provided_password):
+    # checks if the provided username matches with stored one.
     db.changedoc("credentials")
     data = db.data
 
@@ -65,4 +68,5 @@ def doespassmatch(db, provided_username, provided_password):
     password = data[provided_username]
     salt = data[provided_username]
 
+    # returns true if password matches or returns false.
     return verifyhash(password, provided_password, salt)
