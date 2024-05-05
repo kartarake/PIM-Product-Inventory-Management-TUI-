@@ -4,6 +4,7 @@ from modules.boxify import boxify
 import modules.accounts
 
 import credentials
+import sys
 
 # Variable Dashboard
 swidth = 170
@@ -60,6 +61,23 @@ def signup(db): # The page where they can sign up an account.
     
     modules.accounts.new_account(db,username,password)
 
+def login(db):
+    print(boxify("Login", width = swidth))
+    while True:
+        username = input("Enter username : ")
+        l1 = modules.accounts.getuserlist(db)
+        if username in l1:
+            break
+        else:
+            print(boxify("The given username does not exist", width = swidth))
+    while True:
+        password = input("Enter password : ")
+        valuepassword = modules.accounts.doespassmatch(db,username,password)
+        if valuepassword == True:
+            break
+        else:
+            print(boxify("The given password is incorrect", width = swidth))
+
 def createtable(db, name):
     try:
         db.createdoc(name)
@@ -83,6 +101,10 @@ def main():
 
     if followup == "signup":
         signup(db)
+    elif followup == "login":
+        login(db)
+    else:
+        sys.stderr.write("Login/Sign up neglected.")       
     
     #final steps
     db.disconnect()

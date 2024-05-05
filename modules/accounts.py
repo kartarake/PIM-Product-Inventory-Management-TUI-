@@ -60,13 +60,13 @@ def doespassmatch(db, provided_username, provided_password):
     db.changedoc("credentials")
     data = db.data
 
-    if not(provided_username in getuserlist()):
+    if not(provided_username in getuserlist(db)):
         raise ValueError("Username not in data")
     else:
         pass
 
-    password = data[provided_username]
-    salt = data[provided_username]
+    password = data[provided_username]["password"]
+    salt = data[provided_username]["salt"]
 
     # returns true if password matches or returns false.
     return verifyhash(password, provided_password, salt)
