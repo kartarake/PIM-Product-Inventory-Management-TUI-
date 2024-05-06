@@ -95,6 +95,7 @@ def main():
 
     # creating tables
     createtable(db, "credentials")
+    createtable(db, "shop")
 
     # app
     followup = landerpage()

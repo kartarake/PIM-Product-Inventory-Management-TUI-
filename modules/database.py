@@ -94,11 +94,13 @@ class kardb:
         self.data.update(data)
 
     def changedoc(self,docname):
-     
         self.savedoc()
-        self.docname = docname
 
-        self.loaddoc()
+        if self.docname == docname:
+            pass
+        else:        
+            self.docname = docname
+            self.loaddoc()
 
     def renamedoc(self, old_docname, new_docname):
       
