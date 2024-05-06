@@ -78,6 +78,28 @@ def login(db):
         else:
             print(boxify("The given password is incorrect", width = swidth))
 
+def mainmenu():
+    print(boxify("Main Menu",width = 170,align = "centre"))
+    str1 = "[1] Previous shop   |   [3] Manage shop    |   [3] Manage accounts   |   [4] Exit"
+    print(boxify(str1,width = 170,align = "centre"))
+    while True:
+        choice = input('Enter respective choice to continue : ')
+        if choice in ('1', '2','3','Previous shop','Manage shop','Exit'):
+            break
+        else:
+            print(boxify('Invalid choice', width = 170, align = "centre"))
+    
+    if choice == 'Previous shop':
+        choice = '1'
+    elif choice == 'Manage shop':
+        choice = '2'
+    elif choice == 'Exit':
+        choice = '3'
+    else:
+        pass
+
+    return choice
+
 def createtable(db, name):
     try:
         db.createdoc(name)
@@ -106,6 +128,15 @@ def main():
         login(db)
     else:
         sys.stderr.write("Login/Sign up neglected.")       
+
+    while True:
+        followup = mainmenu()
+        if followup == '1':
+            pass
+        elif followup == '2':
+            pass
+        else:
+            break
     
     #final steps
     db.disconnect()
