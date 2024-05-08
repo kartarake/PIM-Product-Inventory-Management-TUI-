@@ -2,6 +2,8 @@ from modules.database import kardb
 from modules.boxify import boxify
 
 import modules.accounts
+import modules.userdata
+import modules.shops
 
 import credentials
 import sys
@@ -60,6 +62,7 @@ def signup(db): # The page where they can sign up an account.
             print(boxify("The password does not match"))
     
     modules.accounts.new_account(db,username,password)
+    return username
 
 def login(db):
     print(boxify("Login", width = swidth))
@@ -77,17 +80,19 @@ def login(db):
             break
         else:
             print(boxify("The given password is incorrect", width = swidth))
+    return username
 
-def mainmenu():
-    print(boxify("Main Menu",width = 170,align = "centre"))
-    str1 = "[1] Previous shop   |   [3] Manage shop    |   [3] Manage accounts   |   [4] Exit"
-    print(boxify(str1,width = 170,align = "centre"))
+def mainmenu(db, person):
+    print(boxify("Main Menu",width = swidth ,align = "centre"))
+    lwshop = modules.userdata.fetchLWShop(db, person)
+    str1 = f"[1] Previous shop - {lwshop}   |   [3] Other shops    |   [3] Exit"
+    print(boxify(str1,width = swidth ,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
         if choice in ('1', '2','3','Previous shop','Manage shop','Exit'):
             break
         else:
-            print(boxify('Invalid choice', width = 170, align = "centre"))
+            print(boxify('Invalid choice', width = swidth, align = "centre"))
     
     if choice == 'Previous shop':
         choice = '1'
@@ -95,6 +100,29 @@ def mainmenu():
         choice = '2'
     elif choice == 'Exit':
         choice = '3'
+    else:
+        pass
+
+    return choice
+
+def shopmenu():
+    str1 = "[1] Add item    |    [3] Remove item     |    [3] Insights     |   [4] Manage shop"
+    print(boxify(str1,width = swidth,align = "centre"))
+    while True:
+        choice = input('Enter respective choice to continue : ')
+        if choice in ('1', '2','3','4','Add item','Insights','Manage shop','Remove item'):
+            break
+        else:
+            print(boxify('Invalid choice', width = swidth, align = "centre"))
+    
+    if choice == "Add item":
+        choice = 1
+    elif choice == 'Remove item':
+        choice = 2
+    elif choice == 'Insights':
+        choice = 3
+    elif choice == 'Manage shop':
+        choice = 4
     else:
         pass
 
@@ -118,21 +146,26 @@ def main():
     # creating tables
     createtable(db, "credentials")
     createtable(db, "shop")
+    createtable(db, "userdata")
 
     # app
     followup = landerpage()
 
     if followup == "signup":
-        signup(db)
+        person = signup(db)
     elif followup == "login":
-        login(db)
+        person = login(db)
     else:
         sys.stderr.write("Login/Sign up neglected.")       
 
     while True:
-        followup = mainmenu()
+        followup = mainmenu(db, person)
         if followup == '1':
-            pass
+            if not modules.userdata.fetchLWShop(db, person):
+                print(boxify('You have no last working shop. Please create/open from manage shop option', width=swidth))
+                continue
+            else:
+                followup = shopmenu()
         elif followup == '2':
             pass
         else:
