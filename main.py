@@ -116,17 +116,60 @@ def shopmenu():
             print(boxify('Invalid choice', width = swidth, align = "centre"))
     
     if choice == "Add item":
-        choice = 1
+        choice = '1'
     elif choice == 'Remove item':
-        choice = 2
+        choice = '2'
     elif choice == 'Insights':
-        choice = 3
+        choice = '3'
     elif choice == 'Manage shop':
-        choice = 4
+        choice = '4'
     else:
         pass
 
     return choice
+
+def addingitem(db, shopname):
+    while True:
+        itemname = input("Enter item name : ")
+        if len(itemname)>64:
+            print("The given item name exceeds the character limit of 64")
+        elif len(itemname)==0:
+            print("The givem item name is empty")
+        else:
+            break
+
+    while True:
+        quantity = input("Enter quantity (units) : ")
+        if quantity.isdigit():
+            quantity = int(quantity)
+            break
+        else:
+            print("The given string is not an integer")
+
+    while True:
+        price = input("Enter price per unit : ")
+        price = price.replace(',','')
+
+        if not price.isdigit():
+            print(boxify('Please enter number', width=swidth))
+        else:
+            price = float(price)
+            break
+
+    print('Enter product description (optional). Just press enter to skip/end')
+    para = []
+    while True:
+        line = input(">")
+        if line == '':
+            break
+        else:
+            para.append(line)
+    desc = '\n'.join(para)
+    if desc == '':
+        desc = None
+
+    modules.shops.newitem(db, shopname, itemname, price, desc)
+    modules.shops.additem(db, shopname, itemname, quantity)
 
 def createtable(db, name):
     try:
@@ -156,7 +199,8 @@ def main():
     elif followup == "login":
         person = login(db)
     else:
-        sys.stderr.write("Login/Sign up neglected.")       
+        sys.stderr.write("Login/Sign up neglected.")
+    del followup      
 
     while True:
         followup = mainmenu(db, person)
@@ -165,7 +209,10 @@ def main():
                 print(boxify('You have no last working shop. Please create/open from manage shop option', width=swidth))
                 continue
             else:
-                followup = shopmenu()
+                shopname = modules.userdata.fetchLWShop(db, person)
+                followup1 = shopmenu()
+                if followup1 == '1':
+                    addingitem(db,shopname)
         elif followup == '2':
             pass
         else:

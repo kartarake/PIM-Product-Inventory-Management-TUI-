@@ -10,8 +10,12 @@ credentials = {
 
 # shop Document
 shop = {
-    "quantity" : {
-        "itemname" : "quantity", #numbers
+    "itemdata" : {
+        "itemname" : {
+            "quantity" : "no. of units (integer)",
+            "price" : "price per unit (float)",
+            "desc" : "Small desc of the item (string)"
+        },
         # More of this...
     },
 

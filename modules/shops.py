@@ -2,7 +2,7 @@ import time
 
 def newshop(db, shopname):
     # To create an empty new shop use this by passing shopname as arg.
-    data = {"quantity":{}, "changes":[], "members":{}}
+    data = {"itemdata":{}, "changes":[], "members":{}}
 
     db.changedoc("shop")
     db.data[shopname] = data
@@ -13,14 +13,22 @@ def fetchshopdata(db, shopname):
     db.changedoc("shop")
     return db.data[shopname]
 
-def fetchquantity(db, shopname):
-    # To get the quantity holding dictionary.
+def fetchitemdata(db, shopname):
+    # To get the itemdata holding dictionary.
     db.changedoc("shop")
-    return db.data[shopname]["quantity"]
+    return db.data[shopname]["itemdata"]
 
 def fetchitemlist(db, shopname):
     # To get the list of all item names.
-    return list(fetchquantity(db, shopname).keys())
+    return list(fetchitemdata(db, shopname).keys())
+
+def fetchitemquantity(db, shopname, itemname):
+    # To get the item quantity in a shop.
+    db.changedoc("shop")
+    if itemname in db.data[shopname]["itemdata"]:
+        return db.data[shopname]["itemname"]["quantity"]
+    else:
+        return None
 
 def fetchchanges(db, shopname):
     # To get the change log in list format.
@@ -32,14 +40,23 @@ def fetchmembers(db, shopname):
     db.changedoc("shop")
     return db.data[shopname]["members"]
 
-def additem(db, shopname, itemname, count = 1):
+def newitem(db, shopname, itemname, price, desc):
+    db.changedoc("shop")
+
+    db.data[shopname][itemname] = {
+        "count" : 0,
+        "price" : price,
+        "desc" : desc
+    }
+
+def additem(db, shopname, itemname, count=1):
     # To addd a item into the shop of passed arg.
     db.changedoc("shop")
 
-    if itemname in db.data[shopname]["quantity"].keys():
-        db.data[shopname]["quantity"][itemname] += count
+    if itemname in db.data[shopname]["itemdata"].keys():
+        db.data[shopname]["itemdata"][itemname]["quantity"] += count
     else:
-        db.data[shopname]["quantity"][itemname] = count
+        db.data[shopname]["itemdata"][itemname]["quantity"] = count
 
     timenow = time.ctime()
     db.data[shopname]["changes"].append([itemname, count, timenow])
@@ -50,10 +67,10 @@ def removeitem(db, shopname, itemname, count = 1):
     # To remove a item from the shop of passed arg.
     db.changedoc("shop")
 
-    if itemname in db.data[shopname]["quantity"].keys():
-        db.data[shopname]["quantity"][itemname] -= count
+    if itemname in db.data[shopname]["itemdata"].keys():
+        db.data[shopname]["itemdata"][itemname]["quantity"] -= count
     else:
-        db.data[shopname]["quantity"][itemname] = 0
+        db.data[shopname]["itemdata"][itemname]["quantity"] = 0
 
     timenow = time.ctime()
     db.data[shopname]["changes"].append([itemname, -count, timenow])
