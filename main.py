@@ -85,7 +85,7 @@ def login(db):
 def mainmenu(db, person):
     print(boxify("Main Menu",width = swidth ,align = "centre"))
     lwshop = modules.userdata.fetchLWShop(db, person)
-    str1 = f"[1] Previous shop - {lwshop}   |   [3] Other shops    |   [3] Exit"
+    str1 = f"[1] Previous shop - {lwshop}   |   [2] Other shops    |   [3] Exit"
     print(boxify(str1,width = swidth ,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
