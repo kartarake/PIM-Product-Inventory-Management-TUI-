@@ -18,11 +18,11 @@ def init(dbname, host, user, password):
     
     cursor.execute("""create table if not exists changes (itemname varchar(30),
                    ccount int,
-                   time date);""")
+                   time datetime);""")
     
     cursor.execute("""create table if not exists members (
                    username varchar(30) primary key,
-                   role varchar(30))""")
+                   role varchar(30));""")
     
     return con
     
