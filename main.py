@@ -2,6 +2,7 @@ from modules.database import kardb
 from modules.boxify import boxify
 
 import modules.accounts
+import modules.database
 import modules.userdata
 import modules.shops
 
@@ -217,17 +218,10 @@ def manageshopmenu():
 
 def main():
     # connecting to the mysql database
-    db = kardb(
-        "PIM",
-        host = "localhost",
-        user = credentials.username,
-        passwd = credentials.password 
-    )
-
-    # creating tables
-    createtable(db, "credentials")
-    createtable(db, "shop")
-    createtable(db, "userdata")
+    try:
+        con = modules.database.connect()
+    except Exception:
+        con = modules.database.init()
 
     # app
     followup = landerpage()
