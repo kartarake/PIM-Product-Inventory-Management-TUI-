@@ -1,6 +1,7 @@
 import hashlib
 import secrets
-import database
+
+import modules.database as database
 
 def gensalt(n):
     charlist = list(range(48,58)) + list(range(65,91)) + list(range(97, 123))
@@ -35,7 +36,6 @@ def getuserlist(con):
 def new_account(con, username, password):
     # use this to create new account in db.
     try:
-        data = database.fetchtable(con, "credentials")
         usernamelist = getuserlist(con)
 
         if username in usernamelist:

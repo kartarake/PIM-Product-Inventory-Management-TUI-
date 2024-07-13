@@ -1,9 +1,7 @@
-from modules.database import kardb
 from modules.boxify import boxify
 
 import modules.accounts
 import modules.database
-import modules.userdata
 import modules.shops
 
 import credentials
@@ -38,11 +36,11 @@ def landerpage(): # The first page upon opening the application.
     else:
         return 'signup'
     
-def signup(db): # The page where they can sign up an account.
+def signup(con): # The page where they can sign up an account.
     print(boxify("Sign Up", width = swidth))
     while True:
         username = input("Enter username:")
-        l1 = modules.accounts.getuserlist(db)
+        l1 = modules.accounts.getuserlist(con)
         if username in l1:
             print(boxify("Username already taken", width = swidth))
         else:
@@ -62,63 +60,40 @@ def signup(db): # The page where they can sign up an account.
         else:
             print(boxify("The password does not match"))
     
-    modules.accounts.new_account(db,username,password)
+    modules.accounts.new_account(con,username,password)
     return username
 
-def login(db):
+def login(con):
     print(boxify("Login", width = swidth))
     while True:
         username = input("Enter username : ")
-        l1 = modules.accounts.getuserlist(db)
+        l1 = modules.accounts.getuserlist(con)
         if username in l1:
             break
         else:
             print(boxify("The given username does not exist", width = swidth))
     while True:
         password = input("Enter password : ")
-        valuepassword = modules.accounts.doespassmatch(db,username,password)
+        valuepassword = modules.accounts.doespassmatch(con,username,password)
         if valuepassword == True:
             break
         else:
             print(boxify("The given password is incorrect", width = swidth))
     return username
 
-def mainmenu(db, person):
-    print(boxify("Main Menu",width = swidth ,align = "centre"))
-    lwshop = modules.userdata.fetchLWShop(db, person)
-    str1 = f"[1] Previous shop - {lwshop}   |   [2] Other shops    |   [3] Exit"
-    print(boxify(str1,width = swidth ,align = "centre"))
-    while True:
-        choice = input('Enter respective choice to continue : ')
-        if choice in ('1', '2','3','Previous shop','Manage shop','Exit'):
-            break
-        else:
-            print(boxify('Invalid choice', width = swidth, align = "centre"))
-    
-    if choice == 'Previous shop':
-        choice = '1'
-    elif choice == 'Manage shop':
-        choice = '2'
-    elif choice == 'Exit':
-        choice = '3'
-    else:
-        pass
-
-    return choice
-
 def shopmenu():
-    str1 = "[1] Add item    |    [3] Remove item     |    [3] Insights     |   [4] Manage shop"
+    str1 = "[1] Add Stock    |    [3] Remove Stock     |    [3] Insights     |   [4] Manage shop"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
-        if choice in ('1', '2','3','4','Add item','Insights','Manage shop','Remove item'):
+        if choice in ('1', '2','3','4','Add Stock','Insights','Manage shop','Remove Stock'):
             break
         else:
             print(boxify('Invalid choice', width = swidth, align = "centre"))
     
-    if choice == "Add item":
+    if choice == "Add Stock":
         choice = '1'
-    elif choice == 'Remove item':
+    elif choice == 'Remove Stock':
         choice = '2'
     elif choice == 'Insights':
         choice = '3'
@@ -129,7 +104,7 @@ def shopmenu():
 
     return choice
 
-def addingitem(db, shopname):
+def addingitem(con):
     while True:
         itemname = input("Enter item name : ")
         if len(itemname)>64:
@@ -169,19 +144,13 @@ def addingitem(db, shopname):
     if desc == '':
         desc = None
 
-    modules.shops.newitem(db, shopname, itemname, price, desc)
-    modules.shops.additem(db, shopname, itemname, quantity)
+    modules.shops.newitem(con, itemname, price, desc)
+    modules.shops.additem(con, itemname, quantity)
 
-def createtable(db, name):
-    try:
-        db.createdoc(name)
-    except NameError:
-        pass
-
-def toremoveitem(db,shopname):
+def toremoveitem(con):
     while True:
         itemname = input("Enter itemname:")
-        itemlist = modules.shops.fetchitemlist(db,shopname)
+        itemlist = modules.shops.fetchitemlist(con)
         if itemname not in itemlist:
             print("The given item is not in the shop")
         else:
@@ -189,13 +158,13 @@ def toremoveitem(db,shopname):
     
     while True:
         quantity = int(input("Enter the no. of items to remove:"))
-        actualquantity = modules.shops.fetchitemquantity(db, shopname, itemname)
+        actualquantity = modules.shops.fetchitemquantity(con, itemname)
         if quantity > actualquantity:
             print("The given amount is greater than the amount of items in the shop")
         else:
             break    
 
-    modules.shops.removeitem(db, shopname, itemname, count = quantity)
+    modules.shops.removeitem(con, itemname, count = quantity)
 
 def manageshopmenu():
     str1 = "[1] Change shopname    |    [2] Permissions    |    [3] Export log    |   [4] Back"
@@ -219,43 +188,51 @@ def manageshopmenu():
 def main():
     # connecting to the mysql database
     try:
-        con = modules.database.connect()
+        con = modules.database.connect(
+            "pim",
+            "localhost",
+            credentials.username,
+            credentials.password
+        )
     except Exception:
-        con = modules.database.init()
+        con = modules.database.init(
+            "pim",
+            "localhost",
+            credentials.username,
+            credentials.password
+        )
 
     # app
     followup = landerpage()
 
-    if followup == "signup":
-        person = signup(db)
-    elif followup == "login":
-        person = login(db)
+    if followup == "signup": # to signup page
+        person = signup(con)
+    elif followup == "login": # to login page
+        person = login(con)
     else:
         sys.stderr.write("Login/Sign up neglected.")
-    del followup      
+    del followup  
 
     while True:
-        followup = mainmenu(db, person)
+        followup = shopmenu()
+
         if followup == '1':
-            if not modules.userdata.fetchLWShop(db, person):
-                print(boxify('You have no last working shop. Please create/open from manage shop option', width=swidth))
-                continue
-            else:
-                shopname = modules.userdata.fetchLWShop(db, person)
-                followup1 = shopmenu()
-                if followup1 == '1':
-                    addingitem(db,shopname)
-                elif followup1 == "2":
-                    toremoveitem(db, shopname)
-                elif followup1 == "4":
-                    followup2 = manageshopmenu()
-        elif followup == '2':
+            addingitem(con)
+
+        elif followup == "2":
+            toremoveitem(con)
+
+        elif followup == "4":
+            followup1 = manageshopmenu()
+
+        elif followup == '3':
             pass
+
         else:
             break
     
     #final steps
-    db.disconnect()
+    modules.database.disconnect()
 
 if __name__ == "__main__":
     main()

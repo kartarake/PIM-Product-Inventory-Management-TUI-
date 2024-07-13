@@ -8,13 +8,13 @@ def init(dbname, host, user, password):
     cursor.execute(f"use {dbname}")
 
     cursor.execute("""create table if not exists credentials (username varchar(30) primary key,
-                   password varchar(50),
-                   salt varchar(32));""")
+                   password varchar(64),
+                   salt varchar(16));""")
     
     cursor.execute("""create table if not exists itemdata (itemname varchar(30) primary key,
                    quantity int,
                    price float(10,4),
-                   desc blob);""")
+                   description blob);""")
     
     cursor.execute("""create table if not exists changes (itemname varchar(30),
                    ccount int,
@@ -57,3 +57,6 @@ def deleterow(con, table, where):
     cursor = con.cursor()
     cursor.execute(f"delete from {table} where {where}")
     con.commit()
+
+def disconnect(con):
+    con.close()

@@ -1,5 +1,6 @@
 import time
-import database
+
+import modules.database as database
 
 def fetchitemdata(con):
     # To get the itemdata holding dictionary.

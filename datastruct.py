@@ -9,9 +9,9 @@ credentials = [
 
 # itemdata Table
 itemdata = [
-    ("itemname1 (varchar(30) primary key)", "quantity (int)", "price (float(10,4))", "desc (blob)"), # row 1
-    ("itemname2 (varchar(30) primary key)", "quantity (int)", "price (float(10,4))", "desc (blob)"), # row 2
-    ("itemname3 (varchar(30) primary key)", "quantity (int)", "price (float(10,4))", "desc (blob)"), # row 3
+    ("itemname1 (varchar(30) primary key)", "quantity (int)", "price (float(10,4))", "description (blob)"), # row 1
+    ("itemname2 (varchar(30) primary key)", "quantity (int)", "price (float(10,4))", "description (blob)"), # row 2
+    ("itemname3 (varchar(30) primary key)", "quantity (int)", "price (float(10,4))", "description (blob)"), # row 3
     # More of this...
 ]
 
