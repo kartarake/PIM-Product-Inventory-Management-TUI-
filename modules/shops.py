@@ -1,102 +1,84 @@
 import time
+import database
 
-def newshop(db, shopname):
-    # To create an empty new shop use this by passing shopname as arg.
-    data = {"itemdata":{}, "changes":[], "members":{}}
-
-    db.changedoc("shop")
-    db.data[shopname] = data
-    db.savedoc()
-
-def fetchshopdata(db, shopname):
-    # To get the whole data of a shop, use this by passing shopname as arg.
-    db.changedoc("shop")
-    return db.data[shopname]
-
-def fetchitemdata(db, shopname):
+def fetchitemdata(con):
     # To get the itemdata holding dictionary.
-    db.changedoc("shop")
-    return db.data[shopname]["itemdata"]
+    data = database.fetchtable(con, "itemdata")
+    return data
 
-def fetchitemlist(db, shopname):
+def fetchitemlist(con):
     # To get the list of all item names.
-    return list(fetchitemdata(db, shopname).keys())
+    return [row[0] for row in fetchitemdata(con)]
 
-def fetchitemquantity(db, shopname, itemname):
+def fetchitemquantity(con, itemname):
     # To get the item quantity in a shop.
-    db.changedoc("shop")
-    if itemname in db.data[shopname]["itemdata"]:
-        return db.data[shopname]["itemname"]["quantity"]
-    else:
-        return None
+    data = fetchitemdata(con)
 
-def fetchchanges(db, shopname):
+    for row in data:
+        if row[0] == itemname:
+            break
+
+    return row[1]
+
+def fetchchanges(con):
     # To get the change log in list format.
-    db.changedoc("shop")
-    return db.data[shopname]["changes"]
+    data = database.fetchtable(con, "changes")
+    return data
 
-def fetchmembers(db, shopname):
-    # To get a dictionary with key as names and value as role.
-    db.changedoc("shop")
-    return db.data[shopname]["members"]
+def fetchmembers(con):
+    # To get the data of members of that shop.
+    data = database.fetchtable(con, "members")
+    return data
 
-def newitem(db, shopname, itemname, price, desc):
-    db.changedoc("shop")
+def newitem(con, itemname, price, desc):
+    # To insert a new item data
+    record = (itemname, 0, price, desc)
+    database.insertrow(con, "itemdata", record)
 
-    db.data[shopname][itemname] = {
-        "count" : 0,
-        "price" : price,
-        "desc" : desc
-    }
+def additem(con, itemname, count=1):
+    # To addd a item into the shop.
+    data = fetchitemdata(con)
 
-def additem(db, shopname, itemname, count=1):
-    # To addd a item into the shop of passed arg.
-    db.changedoc("shop")
+    for i in len(data):
+        if data[i][0] == itemname:
+            break
 
-    if itemname in db.data[shopname]["itemdata"].keys():
-        db.data[shopname]["itemdata"][itemname]["quantity"] += count
-    else:
-        db.data[shopname]["itemdata"][itemname]["quantity"] = count
+    row = list(data[i])
+    row[1] += count
+    row = tuple(row)
 
-    timenow = time.ctime()
-    db.data[shopname]["changes"].append([itemname, count, timenow])
+    data[i] = row
+    database.puttable(con, "itemdata", data)
 
-    db.savedoc()
+    now = time.strftime("%Y%m%d%H%M%S")
+    record = (itemname, count, now)
+    database.insertrow(con, "changes", record)
 
-def removeitem(db, shopname, itemname, count = 1):
-    # To remove a item from the shop of passed arg.
-    db.changedoc("shop")
+def removeitem(con, itemname, count = 1):
+    # To remove a item from the shop.
+    data = fetchitemdata(con)
 
-    if itemname in db.data[shopname]["itemdata"].keys():
-        db.data[shopname]["itemdata"][itemname]["quantity"] -= count
-    else:
-        db.data[shopname]["itemdata"][itemname]["quantity"] = 0
+    for i in len(data):
+        if data[i][0] == itemname:
+            break
 
-    timenow = time.ctime()
-    db.data[shopname]["changes"].append([itemname, -count, timenow])
+    row = list(data[i])
+    row[1] -= count
+    row = tuple(row)
 
-    db.savedoc()
+    data[i] = row
+    database.puttable(con, "itemdata", data)
 
-def addmember(db, shopname, member, role):
-    # To add a member to the shop. role options (owner / admin / cashier)
-    db.changedoc("shop")
+    now = time.strftime("%Y%m%d%H%M%S")
+    record = (itemname, -count, now)
+    database.insertrow(con, "changes", record)
 
-    if member in fetchmembers(db, shopname):
-        return 0
-    elif not role in ("owner", "admin", "cashier"):
-        raise ValueError("Invalid role has been passed.")
-    else:
-        db.data[shopname]["members"][member] = role
-        db.savedoc()
-        return 1
+def addmember(con, member, role):
+    # To add a member to the shop. role options (owner / admin / clerk)
+    record = (member, role)
+    database.insertrow(con, "members", record)
     
-def removemember(db, shopname, member):
+def removemember(con, member):
     # To remove a member from the shop.
-    db.changedoc("shop")
-
-    if not member in fetchmembers(db, shopname):
-        return 0
-    else:
-        del db.data[shopname]["members"][member]
-        db.savedoc()
-        return 1
+    where = f"username = {member}"
+    database.deleterow(con, "members", where)

@@ -52,3 +52,8 @@ def insertrow(con, table, row):
     cursor = con.cursor()
     cursor.execute(f"insert into {table} values{row};")
     con.commit()
+
+def deleterow(con, table, where):
+    cursor = con.cursor()
+    cursor.execute(f"delete from {table} where {where}")
+    con.commit()
