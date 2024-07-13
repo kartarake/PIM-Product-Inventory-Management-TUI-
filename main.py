@@ -177,6 +177,44 @@ def createtable(db, name):
     except NameError:
         pass
 
+def toremoveitem(db,shopname):
+    while True:
+        itemname = input("Enter itemname:")
+        itemlist = modules.shops.fetchitemlist(db,shopname)
+        if itemname not in itemlist:
+            print("The given item is not in the shop")
+        else:
+            break
+    
+    while True:
+        quantity = int(input("Enter the no. of items to remove:"))
+        actualquantity = modules.shops.fetchitemquantity(db, shopname, itemname)
+        if quantity > actualquantity:
+            print("The given amount is greater than the amount of items in the shop")
+        else:
+            break    
+
+    modules.shops.removeitem(db, shopname, itemname, count = quantity)
+
+def manageshopmenu():
+    str1 = "[1] Change shopname    |    [2] Permissions    |    [3] Export log    |   [4] Back"
+    print(boxify(str1,width = swidth,align = "centre"))
+    while True:
+        choice = input('Enter respective choice to continue : ')
+        if choice.lower() in ('1', '2','3','4','change shopname','permissions','export log','back'):
+            if choice.lower() == "change shopname":
+                choice = '1'
+            elif choice.lower() == 'permissions':
+                choice = '2'
+            elif choice.lower() == 'export log':
+                choice = '3'
+            elif choice.lower() == 'back':
+                choice = '4'
+            break
+        else:
+            print(boxify('Invalid choice', width = swidth, align = "centre"))
+    return choice
+
 def main():
     # connecting to the mysql database
     db = kardb(
@@ -213,6 +251,10 @@ def main():
                 followup1 = shopmenu()
                 if followup1 == '1':
                     addingitem(db,shopname)
+                elif followup1 == "2":
+                    toremoveitem(db, shopname)
+                elif followup1 == "4":
+                    followup2 = manageshopmenu()
         elif followup == '2':
             pass
         else:

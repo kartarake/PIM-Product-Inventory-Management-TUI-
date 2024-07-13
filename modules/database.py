@@ -1,5 +1,5 @@
 import json
-import pymysql
+import mysql.connector
 
 class kardb:
     def __init__(self, dbname, host="", user="", passwd=""):
@@ -12,7 +12,7 @@ class kardb:
 
         try:
             self.connect()
-        except pymysql.err.OperationalError:
+        except mysql.connector.errors.ProgrammingError:
             self.create_database()
             self.connect()
 
@@ -21,7 +21,7 @@ class kardb:
 
     def create_database(self):
 
-        self.db = pymysql.connect(
+        self.db = mysql.connector.connect(
             host = self.host,
             user = self.user,
             passwd = self.passwd
@@ -42,7 +42,7 @@ class kardb:
 
     def connect(self):
 
-        self.db = pymysql.connect(
+        self.db = mysql.connector.connect(
             host = self.host,
             user = self.user,
             passwd = self.passwd,
@@ -71,6 +71,7 @@ class kardb:
 
             query = f"insert into {docname} values('{dict()}')"
             self.mycursor.execute(query)
+            self.db.commit()
 
         else:
             raise NameError("A document with the passed name already exists.")
