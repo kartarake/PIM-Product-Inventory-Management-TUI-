@@ -8,8 +8,7 @@ def init(dbname, host, user, password):
     cursor.execute(f"use {dbname}")
 
     cursor.execute("""create table if not exists credentials (username varchar(30) primary key,
-                   password varchar(64),
-                   salt varchar(16));""")
+                   password varchar(64));""")
     
     cursor.execute("""create table if not exists itemdata (itemname varchar(30) primary key,
                    quantity int,

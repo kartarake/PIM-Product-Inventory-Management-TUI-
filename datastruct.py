@@ -1,8 +1,8 @@
 # credentials Table
 credentials = [
-    ("username1 (varchar(30), primary key)", "password varchar(50)", "salt varchar(32)"), # row 1
-    ("username2 (varchar(30), primary key)", "password varchar(50)", "salt varchar(32)"), # row 2
-    ("username3 (varchar(30), primary key)", "password varchar(50)", "salt varchar(32)"), # row 3
+    ("username1 (varchar(30), primary key)", "password varchar(64)"), # row 1
+    ("username2 (varchar(30), primary key)", "password varchar(64)"), # row 2
+    ("username3 (varchar(30), primary key)", "password varchar(64)"), # row 3
     # More of this...
 ]
 

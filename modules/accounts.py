@@ -1,31 +1,4 @@
-import hashlib
-import secrets
-
 import modules.database as database
-
-def gensalt(n):
-    charlist = list(range(48,58)) + list(range(65,91)) + list(range(97, 123))
-    belt = list()
-    for i in range(n):
-        selected = secrets.choice(charlist)
-        character = chr(selected)
-        belt.append(character)
-    salt = ''.join(belt)
-    return salt
-
-
-def hashmash(password, salt):
-    salted_password = password.encode() + salt.encode()
-    hashed_password = hashlib.sha256(salted_password).hexdigest()
-    return hashed_password
-
-def verifyhash(stored_password, provided_password, salt):
-    hashed_password = hashmash(provided_password, salt)
-
-    if hashed_password == stored_password:
-        return True
-    else:
-        return False
     
 def getuserlist(con):
     # returns a list of all usernames.
@@ -40,11 +13,8 @@ def new_account(con, username, password):
 
         if username in usernamelist:
             raise ValueError('Username already exists.')
-        else:
-            salt = gensalt(16)
-            hashed_password = hashmash(password, salt)
-            
-            record = (username, hashed_password, salt)
+        else:            
+            record = (username, password)
             database.insertrow(con, "credentials", record)
 
         return 1
@@ -66,7 +36,6 @@ def doespassmatch(con, provided_username, provided_password):
             break  
 
     password = row[1]
-    salt = row[2]
 
     # returns true if password matches or returns false.
-    return verifyhash(password, provided_password, salt)
+    return password == provided_password
