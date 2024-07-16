@@ -14,7 +14,7 @@ def init(dbname, host, user, password):
     cursor.execute("""create table if not exists itemdata (itemname varchar(30) primary key,
                    quantity int,
                    price float(10,4),
-                   description blob);""")
+                   description text);""")
     
     cursor.execute("""create table if not exists changes (itemname varchar(30),
                    ccount int,

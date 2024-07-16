@@ -82,7 +82,7 @@ def login(con):
     return username
 
 def shopmenu():
-    str1 = "[1] Add Stock    |    [3] Remove Stock     |    [3] Insights     |   [4] Manage shop"
+    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Insights     |   [4] Manage shop"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
@@ -140,7 +140,8 @@ def addingitem(con):
             break
         else:
             para.append(line)
-    desc = '\n'.join(para)
+    desc = str('\n'.join(para))
+    print(type(desc))
     if desc == '':
         desc = None
 

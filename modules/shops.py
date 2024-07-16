@@ -34,13 +34,18 @@ def fetchmembers(con):
 def newitem(con, itemname, price, desc):
     # To insert a new item data
     record = (itemname, 0, price, desc)
-    database.insertrow(con, "itemdata", record)
+    if not desc == None:
+        database.insertrow(con, "itemdata", record)
+    else:
+        cursor = con.cursor()
+        cursor.execute(f"insert into itemdata(itemname, quantity, price) values {record};")
+        con.commit()
 
 def additem(con, itemname, count=1):
     # To addd a item into the shop.
     data = fetchitemdata(con)
 
-    for i in len(data):
+    for i in range(len(data)):
         if data[i][0] == itemname:
             break
 
@@ -59,7 +64,7 @@ def removeitem(con, itemname, count = 1):
     # To remove a item from the shop.
     data = fetchitemdata(con)
 
-    for i in len(data):
+    for i in range(len(data)):
         if data[i][0] == itemname:
             break
 
