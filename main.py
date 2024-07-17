@@ -280,9 +280,7 @@ def askbranch(con):
     print()
     return branch
 
-def main():
-    # app
-
+def main_connect():
     # connecting to the mysql database
     try: # Not first time
         con = modules.database.connect(
@@ -336,7 +334,12 @@ def main():
         person = record[0]
         modules.accounts.new_account(con, username, password)
 
-    # main loop
+    return con, record
+
+def owner_loop(con, record):
+    # main loop for owner
+    person = record[0]
+
     while True:
         if not record[2]:
             print(boxify(record[1].title(), width=swidth, align="centre"))
@@ -372,9 +375,14 @@ def main():
 
         else:
             break
-    
-    #final steps
+
+def main():
+    # Connecting & logging into account
+    con, record = main_connect()
+
+    # Disconnecting from mysql
     modules.database.disconnect()
+
 
 if __name__ == "__main__":
     main()
