@@ -5,14 +5,75 @@ import modules.database
 import modules.shops
 
 import credentials
-import sys
+import json
 
 # Variable Dashboard
 swidth = 170
 
 
+
+def checksame(string1, string2):
+    return string1.lower().strip() == string2.lower().strip()
+
+def checkin(string, iterable):
+    return string in [item.lower() for item in iterable]
+
+def setup():
+    str1 = r"""
+    __        _______ _     ____ ___  __  __ _____   _____ ___    ____ ___ __  __ 
+    \ \      / / ____| |   / ___/ _ \|  \/  | ____| |_   _/ _ \  |  _ \_ _|  \/  |
+     \ \ /\ / /|  _| | |  | |  | | | | |\/| |  _|     | || | | | | |_) | || |\/| |
+      \ V  V / | |___| |__| |__| |_| | |  | | |___    | || |_| | |  __/| || |  | |
+       \_/\_/  |_____|_____\____\___/|_|  |_|_____|   |_| \___/  |_|  |___|_|  |_|
+    """
+    print(boxify(str1,width = swidth, align="centre"))
+    str2 = "Setup"
+    print(boxify(str2,width = swidth, align="centre"))
+    print()
+
+    print("--Step (1/3)--")
+    username, password = fsignup()
+    print()
+
+    print("--Step (2/3)--")
+    shopname = input("Enter your shop name : ")
+    print()
+
+    print("--Step (3/3)--")
+    while True:
+        string = "Do you want multi-branch system enabled?\n\t[1] Yes\n\t[2] No\n>"
+        choice = input(string)
+        if choice in ("1","2"):
+            break
+        else:
+            print(boxify("Invalid Choice", width=swidth))
+    print()
+
+    if choice == "1":
+        choice = 1
+        branchlist = json.dumps(askbranchlist())
+        return (username, password, shopname, choice, branchlist)
+    
+    else:
+        choice = 0
+        return (username, password, shopname, choice)        
+    
+def askbranchlist():
+    branchlist = []
+    while True:
+        branch = input("Enter branch name ('end' to terminate loop): ")
+        if branch in branchlist:
+            print(boxify("Branch already exists!", width=swidth))
+            continue
+        elif checkin(branch,("","end","stop","break","done")):
+            break
+        else:
+            branchlist.append(branch)
+    print()
+    return branchlist
+
 def landerpage(): # The first page upon opening the application.
-    str1 = """
+    str1 = r"""
     __        _______ _     ____ ___  __  __ _____   _____ ___    ____ ___ __  __ 
     \ \      / / ____| |   / ___/ _ \|  \/  | ____| |_   _/ _ \  |  _ \_ _|  \/  |
      \ \ /\ / /|  _| | |  | |  | | | | |\/| |  _|     | || | | | | |_) | || |\/| |
@@ -61,7 +122,27 @@ def signup(con): # The page where they can sign up an account.
             print(boxify("The password does not match"))
     
     modules.accounts.new_account(con,username,password)
-    return username
+
+def fsignup():
+    print(boxify("Sign Up", width = swidth))
+    username = input("Enter username:")
+    
+    while True:
+        password = input("Enter password:")
+        if len(password) < 5:
+            print(boxify("The given password has less than 5 characters", width = swidth))
+        else:
+            break
+    
+    while True:
+        password1 = input("Confirm password:")
+        if password1 == password:
+            break
+        else:
+            print(boxify("The password does not match"))
+
+    return (username,password)
+
 
 def login(con):
     print(boxify("Login", width = swidth))
@@ -82,7 +163,7 @@ def login(con):
     return username
 
 def shopmenu():
-    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Insights     |   [4] Manage shop"
+    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Inventory   |    [4] Insights     |   [5] Manage shop   |   [6] Back"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
@@ -186,47 +267,105 @@ def manageshopmenu():
             print(boxify('Invalid choice', width = swidth, align = "centre"))
     return choice
 
+def askbranch(con):
+    print(boxify("Select Branch",width=swidth))
+    while True:
+        branch = input("Enter branch : ")
+        if branch in modules.shops.fetchbranchlist(con):
+            break
+        else:
+            print(boxify("Invalid branch name", width=swidth))
+    print()
+    return branch
+
 def main():
+    # app
+
     # connecting to the mysql database
-    try:
+    try: # Not first time
         con = modules.database.connect(
             "pim",
             "localhost",
             credentials.username,
             credentials.password
         )
-    except Exception:
-        con = modules.database.init(
-            "pim",
-            "localhost",
-            credentials.username,
-            credentials.password
-        )
+        followup = landerpage()
 
-    # app
-    followup = landerpage()
+        if followup == "signup": # to signup page
+            person = signup(con)
+        elif followup == "login": # to login page
+            person = login(con)
+        else:
+            sys.stderr.write("Login/Sign up neglected.")
+        del followup
 
-    if followup == "signup": # to signup page
-        person = signup(con)
-    elif followup == "login": # to login page
-        person = login(con)
-    else:
-        sys.stderr.write("Login/Sign up neglected.")
-    del followup  
+        data = modules.shops.fetchshops(con)
+        record = [person]
+        if data[1]:
+            record.extend([data[0], data[1], json.loads(data[2]), json.loads(data[3])])
+        else:
+            record.extend([data[0], data[1]])
 
+    except Exception: # first time
+        record = setup()
+
+        username = record[0]
+        password = record[1]
+        record = (record[0],) + record[2:] + ("{}",)
+
+        if not record[2]:
+            con = modules.database.init(
+                "pim",
+                "localhost",
+                credentials.username,
+                credentials.password,
+                shopname = record[1],
+                multibranch = record[2]
+            )
+        else:
+            con = modules.database.mbinit(
+                "pim",
+                "localhost",
+                credentials.username,
+                credentials.password,
+                record[1:-1]
+            )
+        
+        person = record[0]
+        modules.accounts.new_account(con, username, password)
+
+    # main loop
     while True:
+        if not record[2]:
+            print(boxify(record[1].title(), width=swidth, align="centre"))
+
+        elif person in record[4]:
+            lwshop = record[4][person]
+            print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
+
+        else:
+            lwshop = askbranch(con)
+            modules.shops.setlwshop(con, person, lwshop)
+
+            data = modules.shops.fetchshops(con)
+            record = [person]+[data[0], data[1], json.loads(data[2]), json.loads(data[3])]
+            print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
+
         followup = shopmenu()
 
-        if followup == '1':
+        if followup == '1': # Adding an item
             addingitem(con)
 
-        elif followup == "2":
+        elif followup == "2": # Removing an item
             toremoveitem(con)
 
-        elif followup == "4":
+        elif followup == "5": # Manage shop option
             followup1 = manageshopmenu()
 
-        elif followup == '3':
+        elif followup == '4': # Insights
+            pass
+
+        elif followup == "3": # Inventory
             pass
 
         else:

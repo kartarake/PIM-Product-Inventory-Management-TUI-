@@ -1,4 +1,4 @@
-import time
+import time, json
 
 import modules.database as database
 
@@ -88,3 +88,38 @@ def removemember(con, member):
     # To remove a member from the shop.
     where = f"username = {member}"
     database.deleterow(con, "members", where)
+
+def fetchshops(con):
+    # To fetch data from shops table
+    rdata = database.fetchtable(con, "shops")
+    return rdata[0]
+
+def fetchshoplist(con):
+    # Returns a list of shop names.
+    data = fetchshops(con)
+    shoplist = [row[0] for row in data]
+    return shoplist
+
+def addshop(con, shopname, multibranch, trackers):
+    # To add a new shop to database.
+
+    trackers = json.dumps(trackers)    
+    record = (shopname, multibranch, trackers)
+    database.insertrow(con, "shops", record)
+
+def fetchbranchlist(con):
+    data = fetchshops(con)
+    data = json.loads(data[2])
+    return data
+
+def setlwshop(con, username, branch):
+    data = fetchshops(con)
+
+    trackers = json.loads(data[3])
+    trackers[username] = branch
+    trackers = json.dumps(trackers)
+
+    cursor = con.cursor()
+    cursor.execute(f"""update shops
+                   set trackers='{trackers}';""")
+    con.commit() 
