@@ -167,7 +167,7 @@ def shopmenu():
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
-        if choice in ('1', '2','3','4','Add Stock','Insights','Manage shop','Remove Stock'):
+        if choice in ('1', '2','3','4','5','6','Add Stock','Insights','Manage shop','Remove Stock','Inventory','Back'):
             break
         else:
             print(boxify('Invalid choice', width = swidth, align = "centre"))
@@ -177,9 +177,11 @@ def shopmenu():
     elif choice == 'Remove Stock':
         choice = '2'
     elif choice == 'Insights':
-        choice = '3'
-    elif choice == 'Manage shop':
         choice = '4'
+    elif choice == 'Manage shop':
+        choice = '5'
+    elif choice == 'Back':
+        choice = '6'
     else:
         pass
 
@@ -249,12 +251,12 @@ def toremoveitem(con):
     modules.shops.removeitem(con, itemname, count = quantity)
 
 def manageshopmenu():
-    str1 = "[1] Change shopname    |    [2] Permissions    |    [3] Export log    |   [4] Back"
+    str1 = "[1] Change Working Branch    |    [2] Permissions    |    [3] Export log    |   [4] Back"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
-        if choice.lower() in ('1', '2','3','4','change shopname','permissions','export log','back'):
-            if choice.lower() == "change shopname":
+        if choice.lower() in ('1', '2','3','4','change working branch','permissions','export log','back'):
+            if choice.lower() == "change working branch":
                 choice = '1'
             elif choice.lower() == 'permissions':
                 choice = '2'
@@ -296,7 +298,7 @@ def main():
         elif followup == "login": # to login page
             person = login(con)
         else:
-            sys.stderr.write("Login/Sign up neglected.")
+            print(boxify("Neglience of signing up", width=swidth))
         del followup
 
         data = modules.shops.fetchshops(con)
