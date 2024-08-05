@@ -31,6 +31,32 @@ def fetchmembers(con):
     data = database.fetchtable(con, "members")
     return data
 
+def fetchrole(con, username):
+    # To fetch the role of the username
+    data = fetchmembers(con)
+    
+    for i in range(len(data)):
+        if data[i][0] == username:
+            break
+    else:
+        raise ValueError("Username not found")
+
+    return data[i][1]
+
+def changerole(con, username, role):
+    # To change the role of the username
+    data = fetchmembers(con)
+
+    for i in range(len(data)):
+        if data[i][0] == username:
+            break
+    else:
+        raise ValueError("Username not found")
+
+    row = (username, role)
+    data[i] = row
+    modules.database.puttable(con, data)
+
 def newitem(con, itemname, price, desc):
     # To insert a new item data
     record = (itemname, 0, price, desc)

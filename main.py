@@ -41,7 +41,7 @@ def setup():
 
     print("--Step (3/3)--")
     while True:
-        string = "Do you want multi-branch system enabled?\n\t[1] Yes\n\t[2] No\n>"
+        string = "Do you want multi-branch system enabled?\n\t[1] Yes\n\t[2] No\n> "
         choice = input(string)
         if choice in ("1","2"):
             break
@@ -100,7 +100,7 @@ def landerpage(): # The first page upon opening the application.
 def signup(con): # The page where they can sign up an account.
     print(boxify("Sign Up", width = swidth))
     while True:
-        username = input("Enter username:")
+        username = input("Enter username: ")
         l1 = modules.accounts.getuserlist(con)
         if username in l1:
             print(boxify("Username already taken", width = swidth))
@@ -108,14 +108,14 @@ def signup(con): # The page where they can sign up an account.
             break 
     
     while True:
-        password = input("Enter password:")
+        password = input("Enter password: ")
         if len(password) < 5:
             print(boxify("The given password has less than 5 characters", width = swidth))
         else:
             break
     
     while True:
-        password1 = input("Confirm password:")
+        password1 = input("Confirm password: ")
         if password1 == password:
             break
         else:
@@ -125,17 +125,17 @@ def signup(con): # The page where they can sign up an account.
 
 def fsignup():
     print(boxify("Sign Up", width = swidth))
-    username = input("Enter username:")
+    username = input("Enter username: ")
     
     while True:
-        password = input("Enter password:")
+        password = input("Enter password: ")
         if len(password) < 5:
             print(boxify("The given password has less than 5 characters", width = swidth))
         else:
             break
     
     while True:
-        password1 = input("Confirm password:")
+        password1 = input("Confirm password: ")
         if password1 == password:
             break
         else:
@@ -233,7 +233,7 @@ def addingitem(con):
 
 def toremoveitem(con):
     while True:
-        itemname = input("Enter itemname:")
+        itemname = input("Enter itemname: ")
         itemlist = modules.shops.fetchitemlist(con)
         if itemname not in itemlist:
             print("The given item is not in the shop")
@@ -241,7 +241,7 @@ def toremoveitem(con):
             break
     
     while True:
-        quantity = int(input("Enter the no. of items to remove:"))
+        quantity = int(input("Enter the no. of items to remove: "))
         actualquantity = modules.shops.fetchitemquantity(con, itemname)
         if quantity > actualquantity:
             print("The given amount is greater than the amount of items in the shop")
@@ -380,8 +380,13 @@ def main():
     # Connecting & logging into account
     con, record = main_connect()
 
+    # Main loop
+    role = modules.shops.fetchrole(con, record[0])
+    if role == "owner":
+        owner_loop(con, record)
+
     # Disconnecting from mysql
-    modules.database.disconnect()
+    modules.database.disconnect(con)
 
 
 if __name__ == "__main__":
