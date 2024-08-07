@@ -55,7 +55,7 @@ def changerole(con, username, role):
 
     row = (username, role)
     data[i] = row
-    modules.database.puttable(con, data)
+    database.puttable(con, data)
 
 def newitem(con, itemname, price, desc):
     # To insert a new item data
