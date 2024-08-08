@@ -430,7 +430,10 @@ def main_connect():
             )
         
         person = record[0]
-        modules.accounts.new_account(con, username, password, role="owner")
+        modules.accounts.new_account(con, username, password)
+        
+        for branch in branchlist:
+            modules.accounts.addtoshop(con, username, "owner", branch)
 
     return con, record
 

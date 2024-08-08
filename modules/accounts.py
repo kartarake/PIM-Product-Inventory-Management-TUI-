@@ -6,7 +6,7 @@ def getuserlist(con):
     usernamelist = [row[0] for row in data]
     return usernamelist
     
-def new_account(con, username, password, lwshop, role="member"):
+def new_account(con, username, password):
     # use this to create new account in db.
     try:
         usernamelist = getuserlist(con)
@@ -17,13 +17,15 @@ def new_account(con, username, password, lwshop, role="member"):
             record = (username, password)
             database.insertrow(con, "credentials", record)
 
-            record = (username, role)
-            database.insertrow(con, f"{lwshop}_members", record)
-
         return 1
     
     except ValueError:
         return 0  
+
+
+def addtoshop(con, username, role, lwshop):
+    # adds the passed use to members table
+    database.insertrow(con, (username, role), lwshop)
 
 def doespassmatch(con, provided_username, provided_password):
     # checks if the provided username matches with stored one.
