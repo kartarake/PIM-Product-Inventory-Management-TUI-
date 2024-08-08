@@ -6,7 +6,7 @@ def getuserlist(con):
     usernamelist = [row[0] for row in data]
     return usernamelist
     
-def new_account(con, username, password):
+def new_account(con, username, password, role="member"):
     # use this to create new account in db.
     try:
         usernamelist = getuserlist(con)
@@ -16,6 +16,9 @@ def new_account(con, username, password):
         else:            
             record = (username, password)
             database.insertrow(con, "credentials", record)
+
+            record = (username, role)
+            database.insertrow(con, "members", record)
 
         return 1
     

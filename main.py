@@ -4,7 +4,6 @@ import modules.accounts
 import modules.database
 import modules.shops
 
-import credentials
 import json
 
 # Variable Dashboard
@@ -188,6 +187,8 @@ def shopmenu():
     return choice
 
 def addingitem(con):
+    print()
+    print(boxify("Adding Items", width=swidth))
     while True:
         itemname = input("Enter item name : ")
         if len(itemname)>64:
@@ -224,7 +225,6 @@ def addingitem(con):
         else:
             para.append(line)
     desc = str('\n'.join(para))
-    print(type(desc))
     if desc == '':
         desc = None
 
@@ -251,6 +251,7 @@ def toremoveitem(con):
     modules.shops.removeitem(con, itemname, count = quantity)
 
 def manageshopmenu():
+    print("\n")
     str1 = "[1] Change Working Branch    |    [2] Permissions    |    [3] Export log    |   [4] Back"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
@@ -280,14 +281,109 @@ def askbranch(con):
     print()
     return branch
 
+def exportlog(con):
+    f = open("log.txt","w")
+    log = modules.shops.fetchchanges(con)
+    for i in log:
+        f.write(f"[{i[2]}] Count of item {i[0]} changed by {i[1]}") 
+    f.close()
+    print(boxify("Wrote log to log.txt", width=swidth))
+    print()
+
+def addmember(con,member,role):
+    record = ( member, role)
+    modules.database.insertrow(con,"members",record)
+
+def removemember(con,member,role):
+    modules.database.deleterow(con,"members","username ="+member)
+
+def Addmember(con):
+    while True:
+        member = input("Enter member name:")
+        role = input("Enter role:")
+        memberlist = modules.shops.fetchmembers(con)
+        if member in memberlist:
+            print("The given member is already in the shop")
+        else:
+            break
+    addmember(con, member, role)
+
+def Removemember(con):
+    member = input("Enter member name:")
+    while True:
+        memberlist = modules.shops.fetchmembers(con)
+        if member in memberlist:
+            break
+        else:
+            print("The given member is not in the shop")
+    removemember(con,member)
+
+def Changepermission(con):
+    memberlist = modules.shops.fetchmembers(con)
+    while True:
+        username = input("Enter username:")        
+        for i in range(len(memberlist)):
+            if memberlist[i][0] == username:
+                break
+        else:
+            print("Username not found")
+
+    while True:
+        role = input("Enter new role:")
+        for i in range(len(memberlist)):
+            if memberlist[i][1] == role:
+                print("The given member is already in the entered role")
+            else:
+                break       
+
+    row = (username, role)
+    memberlist[i] = row
+    modules.database.puttable(con,"members",memberlist)
+
+
+def ownermenu(con):
+    print("\n")
+    str1 = "[1] Add member    |    [2] Remove member    |    [3] Change permission    |    [4] Back"
+    print(boxify(str1,width = swidth,align = "centre"))
+    while True:
+        choice = input('Enter respective choice to continue : ')
+        if choice in ('1', '2','3','4','Add member','Change permission','Remove member','Back'):
+            break
+        else:
+            print(boxify('Invalid choice', width = swidth, align = "centre"))
+
+    if choice == 'Add member':
+        choice = 1
+    elif choice == 'Remove member':
+        choice = 2
+    elif choice == 'Change permission':
+        choice = 3
+    elif choice == "Back":
+        choice = 4
+
+    if choice == 1:
+        Addmember(con)
+    elif choice == 2:
+        Removemember(con)
+    elif choice == 3:
+        Changepermission(con)
+    elif choice == 4:
+        pass
+
+def insightmenu(con):
+    pass
+
 def main_connect():
     # connecting to the mysql database
+    mysql_user = "root"
+    mysql_pass = "mysql"
+
     try: # Not first time
         con = modules.database.connect(
             "pim",
             "localhost",
-            credentials.username,
-            credentials.password
+            mysql_user,
+            mysql_pass,
         )
         followup = landerpage()
 
@@ -317,8 +413,8 @@ def main_connect():
             con = modules.database.init(
                 "pim",
                 "localhost",
-                credentials.username,
-                credentials.password,
+                mysql_user,
+                mysql_pass,
                 shopname = record[1],
                 multibranch = record[2]
             )
@@ -326,13 +422,13 @@ def main_connect():
             con = modules.database.mbinit(
                 "pim",
                 "localhost",
-                credentials.username,
-                credentials.password,
+                mysql_user,
+                mysql_pass,
                 record[1:-1]
             )
         
         person = record[0]
-        modules.accounts.new_account(con, username, password)
+        modules.accounts.new_account(con, username, password, role="owner")
 
     return con, record
 
@@ -341,6 +437,7 @@ def owner_loop(con, record):
     person = record[0]
 
     while True:
+        print("\n")
         if not record[2]:
             print(boxify(record[1].title(), width=swidth, align="centre"))
 
@@ -365,7 +462,23 @@ def owner_loop(con, record):
             toremoveitem(con)
 
         elif followup == "5": # Manage shop option
-            followup1 = manageshopmenu()
+            while True:
+                followup1 = manageshopmenu()
+
+                if followup1 == "1":
+                    pass
+
+                elif followup1 == "2":
+                    ownermenu(con)
+
+                elif followup1 == "3":
+                    exportlog(con)
+
+                elif followup1 == "4":
+                    break
+
+                else:
+                    print(boxify("Invalid input", width = swidth))
 
         elif followup == '4': # Insights
             pass
@@ -373,8 +486,11 @@ def owner_loop(con, record):
         elif followup == "3": # Inventory
             pass
 
-        else:
+        elif followup == "6":
             break
+
+        else:
+            print(boxify("Invalid choice", width = swidth))
 
 def main():
     # Connecting & logging into account

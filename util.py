@@ -26,6 +26,20 @@ def countlines(extension):
 
     return record
 
+def name_functions(filepath):
+    with open(filepath, "r") as f:
+        content = f.readlines()
+
+    namelist = []
+
+    for line in content:
+        if not "def" in line:
+            continue
+        name = line[:line.index("(")].lstrip("def ")
+        namelist.append(name)
+
+    return namelist
+
 def main():
     while True:
         line = input('> ')
@@ -47,6 +61,14 @@ def main():
             print(string)
             total = sum(record[num] for num in record)
             print(boxify(f"Total : {total}", width=linesize))
+
+        elif "functions" in line:
+            path = input("Enter file path : ")
+            namelist = name_functions(path)
+
+            print(boxify(f"Function Names ({len(namelist)})"))
+            for name in namelist:
+                print(name)
 
         else:
             pass
