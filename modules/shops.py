@@ -2,18 +2,18 @@ import time, json
 
 import modules.database as database
 
-def fetchitemdata(con):
+def fetchitemdata(con, lwshop):
     # To get the itemdata holding dictionary.
-    data = database.fetchtable(con, "itemdata")
+    data = database.fetchtable(con, f"{lwshop}_itemdata")
     return data
 
-def fetchitemlist(con):
+def fetchitemlist(con, lwshop):
     # To get the list of all item names.
     return [row[0] for row in fetchitemdata(con)]
 
-def fetchitemquantity(con, itemname):
+def fetchitemquantity(con, itemname, lwshop):
     # To get the item quantity in a shop.
-    data = fetchitemdata(con)
+    data = fetchitemdata(con, lwshop)
 
     for row in data:
         if row[0] == itemname:
@@ -21,19 +21,19 @@ def fetchitemquantity(con, itemname):
 
     return row[1]
 
-def fetchchanges(con):
+def fetchchanges(con, lwshop):
     # To get the change log in list format.
-    data = database.fetchtable(con, "changes")
+    data = database.fetchtable(con, f"{lwshop}_changes")
     return data
 
-def fetchmembers(con):
+def fetchmembers(con, lwshop):
     # To get the data of members of that shop.
-    data = database.fetchtable(con, "members")
+    data = database.fetchtable(con, f"{lwshop}_members")
     return data
 
-def fetchrole(con, username):
+def fetchrole(con, username, lwshop):
     # To fetch the role of the username
-    data = fetchmembers(con)
+    data = fetchmembers(con, lwshop)
     
     for i in range(len(data)):
         if data[i][0] == username:
@@ -43,9 +43,9 @@ def fetchrole(con, username):
 
     return data[i][1]
 
-def changerole(con, username, role):
+def changerole(con, username, role, lwshop):
     # To change the role of the username
-    data = fetchmembers(con)
+    data = fetchmembers(con, lwshop)
 
     for i in range(len(data)):
         if data[i][0] == username:
@@ -55,21 +55,21 @@ def changerole(con, username, role):
 
     row = (username, role)
     data[i] = row
-    database.puttable(con, data)
+    database.puttable(con, f"{lwshop}_members", data)
 
-def newitem(con, itemname, price, desc):
+def newitem(con, itemname, price, desc, lwshop):
     # To insert a new item data
     record = (itemname, 0, price, desc)
     if not desc == None:
-        database.insertrow(con, "itemdata", record)
+        database.insertrow(con, f"{lwshop}_itemdata", record)
     else:
         cursor = con.cursor()
-        cursor.execute(f"insert into itemdata(itemname, quantity, price) values {record};")
+        cursor.execute(f"insert into {lwshop}_itemdata(itemname, quantity, price) values {record};")
         con.commit()
 
-def additem(con, itemname, count=1):
+def additem(con, itemname, lwshop, count=1):
     # To addd a item into the shop.
-    data = fetchitemdata(con)
+    data = fetchitemdata(con, lwshop)
 
     for i in range(len(data)):
         if data[i][0] == itemname:
@@ -80,15 +80,15 @@ def additem(con, itemname, count=1):
     row = tuple(row)
 
     data[i] = row
-    database.puttable(con, "itemdata", data)
+    database.puttable(con, f"{lwshop}_itemdata", data)
 
     now = time.strftime("%Y%m%d%H%M%S")
     record = (itemname, count, now)
-    database.insertrow(con, "changes", record)
+    database.insertrow(con, f"{lwshop}_changes", record)
 
-def removeitem(con, itemname, count = 1):
+def removeitem(con, itemname, lwshop, count = 1):
     # To remove a item from the shop.
-    data = fetchitemdata(con)
+    data = fetchitemdata(con,lwshop)
 
     for i in range(len(data)):
         if data[i][0] == itemname:
@@ -99,30 +99,30 @@ def removeitem(con, itemname, count = 1):
     row = tuple(row)
 
     data[i] = row
-    database.puttable(con, "itemdata", data)
+    database.puttable(con, f"{lwshop}_itemdata", data)
 
     now = time.strftime("%Y%m%d%H%M%S")
     record = (itemname, -count, now)
-    database.insertrow(con, "changes", record)
+    database.insertrow(con, f"{lwshop}_changes", record)
 
-def addmember(con, member, role):
+def addmember(con, member, role, lwshop):
     # To add a member to the shop. role options (owner / admin / clerk)
     record = (member, role)
-    database.insertrow(con, "members", record)
+    database.insertrow(con, f"{lwshop}_members", record)
     
-def removemember(con, member):
+def removemember(con, member, lwshop):
     # To remove a member from the shop.
     where = f"username = {member}"
-    database.deleterow(con, "members", where)
+    database.deleterow(con, f"{lwshop}_members", where)
 
 def fetchshops(con):
     # To fetch data from shops table
-    rdata = database.fetchtable(con, "shops")
+    rdata = database.fetchtable(con, "shop")
     return rdata[0]
 
-def fetchshoplist(con):
+def fetchshoplist(con, lwshop):
     # Returns a list of shop names.
-    data = fetchshops(con)
+    data = fetchshops(con, lwshop)
     shoplist = [row[0] for row in data]
     return shoplist
 
@@ -131,7 +131,7 @@ def addshop(con, shopname, multibranch, trackers):
 
     trackers = json.dumps(trackers)    
     record = (shopname, multibranch, trackers)
-    database.insertrow(con, "shops", record)
+    database.insertrow(con, "shop", record)
 
 def fetchbranchlist(con):
     data = fetchshops(con)
@@ -146,6 +146,6 @@ def setlwshop(con, username, branch):
     trackers = json.dumps(trackers)
 
     cursor = con.cursor()
-    cursor.execute(f"""update shops
+    cursor.execute(f"""update shop
                    set trackers='{trackers}';""")
     con.commit() 

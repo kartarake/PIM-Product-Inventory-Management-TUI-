@@ -186,7 +186,7 @@ def shopmenu():
 
     return choice
 
-def addingitem(con):
+def addingitem(con, lwshop):
     print()
     print(boxify("Adding Items", width=swidth))
     while True:
@@ -228,8 +228,8 @@ def addingitem(con):
     if desc == '':
         desc = None
 
-    modules.shops.newitem(con, itemname, price, desc)
-    modules.shops.additem(con, itemname, quantity)
+    modules.shops.newitem(con, itemname, price, desc, lwshop)
+    modules.shops.additem(con, itemname, lwshop, quantity)
 
 def toremoveitem(con):
     while True:
@@ -407,6 +407,8 @@ def main_connect():
 
         username = record[0]
         password = record[1]
+        branchlist = record[4]
+        
         record = (record[0],) + record[2:] + ("{}",)
 
         if not record[2]:
@@ -439,6 +441,7 @@ def owner_loop(con, record):
     while True:
         print("\n")
         if not record[2]:
+            lwshop=None
             print(boxify(record[1].title(), width=swidth, align="centre"))
 
         elif person in record[4]:
@@ -456,7 +459,7 @@ def owner_loop(con, record):
         followup = shopmenu()
 
         if followup == '1': # Adding an item
-            addingitem(con)
+            addingitem(con, lwshop)
 
         elif followup == "2": # Removing an item
             toremoveitem(con)

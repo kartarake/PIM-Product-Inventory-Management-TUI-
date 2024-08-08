@@ -8,26 +8,26 @@ def init(dbname, host, user, password, shopname, multibranch):
     cursor.execute(f"create database if not exists {dbname};")
     cursor.execute(f"use {dbname}")
 
-    cursor.execute("""create table if not exists shops (
+    cursor.execute("""create table if not exists shop (
                    shopname varchar(30) primary key,
                    multibranch int);""")
     
     record = (shopname, multibranch)
-    cursor.execute(f"insert into shops values{record}")
+    cursor.execute(f"insert into shop values{record}")
 
-    cursor.execute("""create table if not exists credentials (username varchar(30) primary key,
+    cursor.execute(f"""create table if not exists {None}_credentials (username varchar(30) primary key,
                    password varchar(64));""")
     
-    cursor.execute("""create table if not exists itemdata (itemname varchar(30) primary key,
+    cursor.execute(f"""create table if not exists {None}_itemdata (itemname varchar(30) primary key,
                    quantity int,
                    price float(10,4),
                    description text);""")
     
-    cursor.execute("""create table if not exists changes (itemname varchar(30),
+    cursor.execute(f"""create table if not exists {None}_changes (itemname varchar(30),
                    ccount int,
                    time datetime);""")
     
-    cursor.execute("""create table if not exists members (
+    cursor.execute(f"""create table if not exists {None}_members (
                    username varchar(30) primary key,
                    role varchar(30));""")
     
@@ -41,30 +41,34 @@ def mbinit(dbname, host, user, password, record):
     cursor.execute(f"create database if not exists {dbname};")
     cursor.execute(f"use {dbname}")
 
-    cursor.execute("""create table if not exists shops (
+    cursor.execute("""create table if not exists shop (
                    shopname varchar(30) primary key,
                    multibranch int,
                    branchlist text,
                    trackers text);""")
     
     record = record + (json.dumps({}),)
-    cursor.execute(f"insert into shops values{record};")
+    cursor.execute(f"insert into shop values{record};")
 
-    cursor.execute("""create table if not exists credentials (username varchar(30) primary key,
-                   password varchar(64));""")
-    
-    cursor.execute("""create table if not exists itemdata (itemname varchar(30) primary key,
-                   quantity int,
-                   price float(10,4),
-                   description text);""")
-    
-    cursor.execute("""create table if not exists changes (itemname varchar(30),
-                   ccount int,
-                   time datetime);""")
-    
-    cursor.execute("""create table if not exists members (
-                   username varchar(30) primary key,
-                   role varchar(30));""")
+    cursor.execute(f"select branchlist from shop;")
+    branchlist = json.loads(cursor.fetchone()[0])
+
+    for branch in branchlist:
+        cursor.execute(f"""create table if not exists {branch}_credentials (username varchar(30) primary key,
+                    password varchar(64));""")
+            
+        cursor.execute(f"""create table if not exists {branch}_itemdata (itemname varchar(30) primary key,
+                    quantity int,
+                    price float(10,4),
+                    description text);""")
+            
+        cursor.execute(f"""create table if not exists {branch}_changes (itemname varchar(30),
+                    ccount int,
+                    time datetime);""")
+            
+        cursor.execute(f"""create table if not exists {branch}_members (
+                    username varchar(30) primary key,
+                    role varchar(30));""")
         
     return con
     

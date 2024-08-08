@@ -1,12 +1,12 @@
 import modules.database as database
-    
+
 def getuserlist(con):
     # returns a list of all usernames.
     data = database.fetchtable(con, "credentials")
     usernamelist = [row[0] for row in data]
     return usernamelist
     
-def new_account(con, username, password, role="member"):
+def new_account(con, username, password, lwshop, role="member"):
     # use this to create new account in db.
     try:
         usernamelist = getuserlist(con)
@@ -18,7 +18,7 @@ def new_account(con, username, password, role="member"):
             database.insertrow(con, "credentials", record)
 
             record = (username, role)
-            database.insertrow(con, "members", record)
+            database.insertrow(con, f"{lwshop}_members", record)
 
         return 1
     
