@@ -370,6 +370,25 @@ def ownermenu(con):
     elif choice == 4:
         pass
 
+def ownermanager(con):
+    while True:
+        followup2 = ownermenu(con)
+
+        if followup2 == "1":
+            Addmember(con)
+
+        elif followup2 == "2":
+            Removemember(con)
+                        
+        elif followup2 == "3":
+            Changepermission(con)
+
+        elif followup2 == "4":
+            break
+
+        else:
+            print(boxify("Invalid choice entered.", width=swidth))
+
 def insightmenu(con):
     pass
 
@@ -473,7 +492,7 @@ def owner_loop(con, record, lwshop):
                     pass
 
                 elif followup1 == "2":
-                    ownermenu(con)
+                    ownermanager(con)
 
                 elif followup1 == "3":
                     exportlog(con)
