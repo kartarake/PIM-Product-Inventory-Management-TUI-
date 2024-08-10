@@ -394,25 +394,6 @@ def ownermanageshoploop(con):
         else:
             print(boxify("Invalid input", width = swidth))
 
-def ownermanager(con):
-    while True:
-        followup2 = ownermenu(con)
-
-        if followup2 == "1":
-            Addmember(con)
-
-        elif followup2 == "2":
-            Removemember(con)
-                        
-        elif followup2 == "3":
-            Changepermission(con)
-
-        elif followup2 == "4":
-            break
-
-        else:
-            print(boxify("Invalid choice entered.", width=swidth))
-
 def insightmenu(con):
     pass
 
@@ -509,27 +490,7 @@ def owner_loop(con, record, lwshop):
             toremoveitem(con, lwshop)
 
         elif followup == "5": # Manage shop option
-<<<<<<< HEAD
             ownermanageshoploop(con)
-=======
-            while True:
-                followup1 = manageshopmenu()
-
-                if followup1 == "1":
-                    pass
-
-                elif followup1 == "2":
-                    ownermanager(con)
-
-                elif followup1 == "3":
-                    exportlog(con)
-
-                elif followup1 == "4":
-                    break
-
-                else:
-                    print(boxify("Invalid input", width = swidth))
->>>>>>> 46d6a9719a0898e16beb37a7f413f931b76688d0
 
         elif followup == '4': # Insights
             pass
