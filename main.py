@@ -186,7 +186,7 @@ def shopmenu():
 
     return choice
 
-def addingitem(con):
+def addingitem(con, lwshop):
     print()
     print(boxify("Adding Items", width=swidth))
     while True:
@@ -228,13 +228,13 @@ def addingitem(con):
     if desc == '':
         desc = None
 
-    modules.shops.newitem(con, itemname, price, desc)
-    modules.shops.additem(con, itemname, quantity)
+    modules.shops.newitem(con, itemname, price, desc, lwshop)
+    modules.shops.additem(con, itemname, lwshop, quantity)
 
-def toremoveitem(con):
+def toremoveitem(con, lwshop):
     while True:
         itemname = input("Enter itemname: ")
-        itemlist = modules.shops.fetchitemlist(con)
+        itemlist = modules.shops.fetchitemlist(con, lwshop)
         if itemname not in itemlist:
             print("The given item is not in the shop")
         else:
@@ -242,13 +242,13 @@ def toremoveitem(con):
     
     while True:
         quantity = int(input("Enter the no. of items to remove: "))
-        actualquantity = modules.shops.fetchitemquantity(con, itemname)
+        actualquantity = modules.shops.fetchitemquantity(con, itemname, lwshop)
         if quantity > actualquantity:
             print("The given amount is greater than the amount of items in the shop")
         else:
             break    
 
-    modules.shops.removeitem(con, itemname, count = quantity)
+    modules.shops.removeitem(con, itemname, lwshop, count = quantity)
 
 def manageshopmenu():
     print("\n")
@@ -370,6 +370,25 @@ def ownermenu(con):
     elif choice == 4:
         pass
 
+def ownermanager(con):
+    while True:
+        followup2 = ownermenu(con)
+
+        if followup2 == "1":
+            Addmember(con)
+
+        elif followup2 == "2":
+            Removemember(con)
+                        
+        elif followup2 == "3":
+            Changepermission(con)
+
+        elif followup2 == "4":
+            break
+
+        else:
+            print(boxify("Invalid choice entered.", width=swidth))
+
 def insightmenu(con):
     pass
 
@@ -407,6 +426,8 @@ def main_connect():
 
         username = record[0]
         password = record[1]
+        branchlist = record[4]
+        
         record = (record[0],) + record[2:] + ("{}",)
 
         if not record[2]:
@@ -428,11 +449,14 @@ def main_connect():
             )
         
         person = record[0]
-        modules.accounts.new_account(con, username, password, role="owner")
+        modules.accounts.new_account(con, username, password)
+        
+        for branch in json.loads(branchlist):
+            modules.accounts.addtoshop(con, username, "owner", branch)
 
     return con, record
 
-def owner_loop(con, record):
+def owner_loop(con, record, lwshop):
     # main loop for owner
     person = record[0]
 
@@ -442,7 +466,6 @@ def owner_loop(con, record):
             print(boxify(record[1].title(), width=swidth, align="centre"))
 
         elif person in record[4]:
-            lwshop = record[4][person]
             print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
 
         else:
@@ -456,10 +479,10 @@ def owner_loop(con, record):
         followup = shopmenu()
 
         if followup == '1': # Adding an item
-            addingitem(con)
+            addingitem(con, lwshop)
 
         elif followup == "2": # Removing an item
-            toremoveitem(con)
+            toremoveitem(con, lwshop)
 
         elif followup == "5": # Manage shop option
             while True:
@@ -469,7 +492,7 @@ def owner_loop(con, record):
                     pass
 
                 elif followup1 == "2":
-                    ownermenu(con)
+                    ownermanager(con)
 
                 elif followup1 == "3":
                     exportlog(con)
@@ -497,9 +520,19 @@ def main():
     con, record = main_connect()
 
     # Main loop
-    role = modules.shops.fetchrole(con, record[0])
+    if not record[2]:
+        lwshop=None
+
+    elif record[0] in record[4]:
+        lwshop = record[4][record[0]]
+
+    else:
+        lwshop = askbranch(con)
+        modules.shops.setlwshop(con, record[0], lwshop)
+    
+    role = modules.shops.fetchrole(con, record[0], lwshop)
     if role == "owner":
-        owner_loop(con, record)
+        owner_loop(con, record, lwshop)
 
     # Disconnecting from mysql
     modules.database.disconnect(con)
