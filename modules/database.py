@@ -87,17 +87,39 @@ def puttable(con, table, grid):
     cursor.execute(f"delete from {table};")
     
     for row in grid:
-        row = tuple(row)
-        cursor.execute(f"insert into {table} values{row};")
+        insertrow(con, table, row)
 
     con.commit()
 
 def insertrow(con, table, row):
     row = tuple(row)
 
+    if None in row:
+        row = insertwithnonestring(row)
+
     cursor = con.cursor()
     cursor.execute(f"insert into {table} values{row};")
     con.commit()
+
+def insertwithnonestring(record):
+    qstring = []
+    qstring.append("(")
+    for item in record:
+        if type(item) == str:
+            qstring.append("'")
+            qstring.append(item)
+            qstring.append("'")
+            qstring.append(",")
+        elif item == None:
+            qstring.append("null")
+            qstring.append(",")
+        else:
+            qstring.append(str(item))
+            qstring.append(",")
+    qstring.pop()
+    qstring.append(")")
+    qstring = "".join(qstring)
+    return qstring
 
 def deleterow(con, table, where):
     cursor = con.cursor()

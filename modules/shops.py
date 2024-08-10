@@ -9,7 +9,7 @@ def fetchitemdata(con, lwshop):
 
 def fetchitemlist(con, lwshop):
     # To get the list of all item names.
-    return [row[0] for row in fetchitemdata(con)]
+    return [row[0] for row in fetchitemdata(con, lwshop)]
 
 def fetchitemquantity(con, itemname, lwshop):
     # To get the item quantity in a shop.
@@ -64,7 +64,7 @@ def newitem(con, itemname, price, desc, lwshop):
         database.insertrow(con, f"{lwshop}_itemdata", record)
     else:
         cursor = con.cursor()
-        cursor.execute(f"insert into {lwshop}_itemdata(itemname, quantity, price) values {record};")
+        cursor.execute(f"insert into {lwshop}_itemdata(itemname, quantity, price) values {record[:-1]};")
         con.commit()
 
 def additem(con, itemname, lwshop, count=1):

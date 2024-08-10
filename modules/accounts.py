@@ -25,7 +25,7 @@ def new_account(con, username, password):
 
 def addtoshop(con, username, role, lwshop):
     # adds the passed use to members table
-    database.insertrow(con, (username, role), lwshop)
+    database.insertrow(con, f"{lwshop}_members", (username, role))
 
 def doespassmatch(con, provided_username, provided_password):
     # checks if the provided username matches with stored one.
