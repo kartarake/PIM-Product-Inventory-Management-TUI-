@@ -324,9 +324,13 @@ def Changepermission(con):
         username = input("Enter username:")        
         for i in range(len(memberlist)):
             if memberlist[i][0] == username:
+                found=True
                 break
         else:
             print("Username not found")
+
+        if found:
+            break
 
     while True:
         role = input("Enter new role:")
@@ -342,33 +346,53 @@ def Changepermission(con):
 
 
 def ownermenu(con):
-    print("\n")
-    str1 = "[1] Add member    |    [2] Remove member    |    [3] Change permission    |    [4] Back"
-    print(boxify(str1,width = swidth,align = "centre"))
     while True:
-        choice = input('Enter respective choice to continue : ')
-        if choice in ('1', '2','3','4','Add member','Change permission','Remove member','Back'):
+        print("\n")
+        str1 = "[1] Add member    |    [2] Remove member    |    [3] Change permission    |    [4] Back"
+        print(boxify(str1,width = swidth,align = "centre"))
+        while True:
+            choice = input('Enter respective choice to continue : ')
+            if choice in ('1', '2','3','4','Add member','Change permission','Remove member','Back'):
+                break
+            else:
+                print(boxify('Invalid choice', width = swidth, align = "centre"))
+
+        if choice == 'Add member':
+            choice = 1
+        elif choice == 'Remove member':
+            choice = 2
+        elif choice == 'Change permission':
+            choice = 3
+        elif choice == "Back":
+            choice = 4
+
+        if choice == 1:
+            Addmember(con)
+        elif choice == 2:
+            Removemember(con)
+        elif choice == 3:
+            Changepermission(con)
+        elif choice == 4:
             break
+
+def ownermanageshoploop(con):
+    while True:
+        followup1 = manageshopmenu()
+
+        if followup1 == "1":
+            pass
+
+        elif followup1 == "2":
+            ownermenu(con)
+
+        elif followup1 == "3":
+            exportlog(con)
+
+        elif followup1 == "4":
+            break
+
         else:
-            print(boxify('Invalid choice', width = swidth, align = "centre"))
-
-    if choice == 'Add member':
-        choice = 1
-    elif choice == 'Remove member':
-        choice = 2
-    elif choice == 'Change permission':
-        choice = 3
-    elif choice == "Back":
-        choice = 4
-
-    if choice == 1:
-        Addmember(con)
-    elif choice == 2:
-        Removemember(con)
-    elif choice == 3:
-        Changepermission(con)
-    elif choice == 4:
-        pass
+            print(boxify("Invalid input", width = swidth))
 
 def insightmenu(con):
     pass
@@ -462,23 +486,7 @@ def owner_loop(con, record):
             toremoveitem(con)
 
         elif followup == "5": # Manage shop option
-            while True:
-                followup1 = manageshopmenu()
-
-                if followup1 == "1":
-                    pass
-
-                elif followup1 == "2":
-                    ownermenu(con)
-
-                elif followup1 == "3":
-                    exportlog(con)
-
-                elif followup1 == "4":
-                    break
-
-                else:
-                    print(boxify("Invalid input", width = swidth))
+            ownermanageshoploop(con)
 
         elif followup == '4': # Insights
             pass
