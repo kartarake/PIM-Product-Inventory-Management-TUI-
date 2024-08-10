@@ -1,12 +1,12 @@
 import modules.database as database
-    
+
 def getuserlist(con):
     # returns a list of all usernames.
     data = database.fetchtable(con, "credentials")
     usernamelist = [row[0] for row in data]
     return usernamelist
     
-def new_account(con, username, password, role="member"):
+def new_account(con, username, password):
     # use this to create new account in db.
     try:
         usernamelist = getuserlist(con)
@@ -17,13 +17,15 @@ def new_account(con, username, password, role="member"):
             record = (username, password)
             database.insertrow(con, "credentials", record)
 
-            record = (username, role)
-            database.insertrow(con, "members", record)
-
         return 1
     
     except ValueError:
         return 0  
+
+
+def addtoshop(con, username, role, lwshop):
+    # adds the passed use to members table
+    database.insertrow(con, f"{lwshop}_members", (username, role))
 
 def doespassmatch(con, provided_username, provided_password):
     # checks if the provided username matches with stored one.
