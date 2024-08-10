@@ -15,7 +15,7 @@ def init(dbname, host, user, password, shopname, multibranch):
     record = (shopname, multibranch)
     cursor.execute(f"insert into shop values{record}")
 
-    cursor.execute(f"""create table if not exists {None}_credentials (username varchar(30) primary key,
+    cursor.execute(f"""create table if not exists credentials (username varchar(30) primary key,
                    password varchar(64));""")
     
     cursor.execute(f"""create table if not exists {None}_itemdata (itemname varchar(30) primary key,
@@ -54,7 +54,7 @@ def mbinit(dbname, host, user, password, record):
     branchlist = json.loads(cursor.fetchone()[0])
 
     for branch in branchlist:
-        cursor.execute(f"""create table if not exists {branch}_credentials (username varchar(30) primary key,
+        cursor.execute(f"""create table if not exists credentials (username varchar(30) primary key,
                     password varchar(64));""")
             
         cursor.execute(f"""create table if not exists {branch}_itemdata (itemname varchar(30) primary key,

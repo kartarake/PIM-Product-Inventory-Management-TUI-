@@ -503,7 +503,14 @@ def main():
     con, record = main_connect()
 
     # Main loop
-    role = modules.shops.fetchrole(con, record[0])
+    if not record[2]:
+        lwshop=None
+    elif record[0] in record[4]:
+        lwshop = record[4][record[0]]
+    else:
+        lwshop = askbranch(con)
+    
+    role = modules.shops.fetchrole(con, record[0], lwshop)
     if role == "owner":
         owner_loop(con, record)
 
