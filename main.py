@@ -290,36 +290,35 @@ def exportlog(con):
     print(boxify("Wrote log to log.txt", width=swidth))
     print()
 
-def addmember(con,member,role):
+def addmember(con,member,role,lwshop):
     record = ( member, role)
-    modules.database.insertrow(con,"members",record)
+    modules.database.insertrow(con,lwshop+"_members",record)
 
-def removemember(con,member,role):
-    modules.database.deleterow(con,"members","username ="+member)
+def removemember(con,member,lwshop):
+    modules.database.deleterow(con,lwshop+"_members","username ='"+member+"'")
 
-def Addmember(con):
+def Addmember(con, lwshop):
     while True:
-        member = input("Enter member name:")
-        role = input("Enter role:")
-        memberlist = modules.shops.fetchmembers(con)
-        if member in memberlist:
+        member = input("Enter member name: ")
+        role = input("Enter role: ")
+        if modules.shops.checkmemberexists(con, member, lwshop):
             print("The given member is already in the shop")
         else:
             break
-    addmember(con, member, role)
+    addmember(con, member, role, lwshop)
 
-def Removemember(con):
-    member = input("Enter member name:")
-    while True:
-        memberlist = modules.shops.fetchmembers(con)
-        if member in memberlist:
+def Removemember(con, lwshop):
+    memberlist = modules.shops.fetchmembers(con, lwshop)
+    while True:        
+        member = input("Enter member name: ")
+        if modules.shops.checkmemberexists(con, member, lwshop):
             break
         else:
             print("The given member is not in the shop")
-    removemember(con,member)
+    removemember(con, member, lwshop)
 
-def Changepermission(con):
-    memberlist = modules.shops.fetchmembers(con)
+def Changepermission(con, lwshop):
+    memberlist = modules.shops.fetchmembers(con, lwshop)
     while True:
         username = input("Enter username:")        
         for i in range(len(memberlist)):
@@ -328,6 +327,7 @@ def Changepermission(con):
                 break
         else:
             print("Username not found")
+            found = False
 
         if found:
             break
@@ -337,15 +337,20 @@ def Changepermission(con):
         for i in range(len(memberlist)):
             if memberlist[i][1] == role:
                 print("The given member is already in the entered role")
+                newrole = False
             else:
-                break       
+                newrole = True
+                break
+
+        if newrole:
+            break
 
     row = (username, role)
     memberlist[i] = row
-    modules.database.puttable(con,"members",memberlist)
+    modules.database.puttable(con,lwshop+"_members",memberlist)
 
 
-def ownermenu(con):
+def ownermenu(con, lwshop):
     while True:
         print("\n")
         str1 = "[1] Add member    |    [2] Remove member    |    [3] Change permission    |    [4] Back"
@@ -357,45 +362,51 @@ def ownermenu(con):
             else:
                 print(boxify('Invalid choice', width = swidth, align = "centre"))
 
-        if choice == 'Add member':
-            choice = 1
-        elif choice == 'Remove member':
-            choice = 2
-        elif choice == 'Change permission':
-            choice = 3
-        elif choice == "Back":
-            choice = 4
-
-        if choice == 1:
-            Addmember(con)
-        elif choice == 2:
-            Removemember(con)
-        elif choice == 3:
-            Changepermission(con)
-        elif choice == 4:
+        if choice == "1":
+            Addmember(con, lwshop)
+        elif choice == "2":
+            Removemember(con, lwshop)
+        elif choice == "3":
+            Changepermission(con, lwshop)
+        elif choice == "4":
             break
-
-def ownermanageshoploop(con):
-    while True:
-        followup1 = manageshopmenu()
-
-        if followup1 == "1":
-            pass
-
-        elif followup1 == "2":
-            ownermenu(con)
-
-        elif followup1 == "3":
-            exportlog(con)
-
-        elif followup1 == "4":
-            break
-
-        else:
-            print(boxify("Invalid input", width = swidth))
 
 def insightmenu(con):
-    pass
+    menu = """\t[1] Inventory Turnover Rate
+\t[2] Stockout Rate
+\t[3] ABC Analysis
+\t[4] Back"""
+    while True:
+        print(boxify("Insights available", width = swidth))
+        print(menu)
+        choice = input("Enter respective number : ")
+        if not choice in ("1", "2", "3", "4"):
+            print("Invalid choice")
+        else:
+            break
+
+    if choice == '1':
+        return 1
+
+    elif choice == '2':
+        return 1
+
+    elif choice == '3':
+        return 1
+
+    elif choice == '4':
+        return 0
+
+    else:
+        print("Invalid choice")
+
+def insight_loop(con):
+    while True:
+        signal = insightmenu(con)
+        if signal == 0:
+            break
+        else:
+            pass
 
 def main_connect():
     # connecting to the mysql database
@@ -490,10 +501,10 @@ def owner_loop(con, record, lwshop):
             toremoveitem(con, lwshop)
 
         elif followup == "5": # Manage shop option
-            ownermanageshoploop(con)
+            ownermenu(con, lwshop)
 
         elif followup == '4': # Insights
-            pass
+            insight_loop(con)
 
         elif followup == "3": # Inventory
             pass
@@ -517,6 +528,10 @@ def main():
 
     else:
         lwshop = askbranch(con)
+        record = list(record)
+        record[4] = eval(record[4])
+        record[4][record[0]] = lwshop
+        record[4] = json.dumps(record[4])
         modules.shops.setlwshop(con, record[0], lwshop)
     
     role = modules.shops.fetchrole(con, record[0], lwshop)

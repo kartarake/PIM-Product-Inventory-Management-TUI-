@@ -85,6 +85,7 @@ def fetchtable(con, table):
 def puttable(con, table, grid):
     cursor = con.cursor()
     cursor.execute(f"delete from {table};")
+    con.commit()
     
     for row in grid:
         insertrow(con, table, row)

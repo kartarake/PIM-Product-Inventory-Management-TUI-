@@ -115,6 +115,15 @@ def removemember(con, member, lwshop):
     where = f"username = {member}"
     database.deleterow(con, f"{lwshop}_members", where)
 
+def checkmemberexists(con, member, lwshop):
+    # To check if the member exists in the shop
+    data = fetchmembers(con, lwshop)
+    for i in range(len(data)):
+        if data[i][0] == member:
+            return True
+    else:
+        return False
+
 def fetchshops(con):
     # To fetch data from shops table
     rdata = database.fetchtable(con, "shop")
