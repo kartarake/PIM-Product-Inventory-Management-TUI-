@@ -13,3 +13,49 @@ def timeperiod(con, lwshop):
 
     timeperiod = end - start
     return timeperiod
+
+
+def invturnover(con):
+    itemdata=shops.fetchitemdata(con)
+    changes=shops.fetchchanges(con)
+    list1=[]
+    listofquantity=[]
+    for transc in changes:
+        count=transc[1]
+        itemname=transc[0]
+        if count<0:
+            for row in itemdata:
+                if itemname in row:
+                    break
+            price=count*row[2]
+            list1.append(price)
+    cost=sum(list1)
+    list2=[]
+    for total in itemdata:
+        quantity=total[1]
+        list2.append(quantity)
+    numofitems=len(itemdata)
+    totalitems=sum(listofquantity)
+    averageinv=totalitems/numofitems
+    turnover=cost/averageinv
+    return turnover
+
+
+def invstockout(con):
+    itemdata=shops.fetchitemdata(con)
+    changes=shops.fetchchanges(con)
+    stockout=0
+    initial=0
+    listofqty=[]
+    for rows in changes:
+        countofitems=rows[1]
+        initial=initial+countofitems
+        if initial==0:
+            stockout+=1
+        print('Number of stockouts : ',stockout)
+    for total in itemdata:
+        quantity=total[1]
+        listofqty.append(quantity)
+    totalitems=sum(listofqty)
+    stockoutrate=totalitems/stockout
+    return stockoutrate
