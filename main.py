@@ -529,13 +529,8 @@ def main():
     else:
         lwshop = askbranch(con)
         record = list(record)
-        try:
-            record[4] = eval(record[4])
-            record[4][record[0]] = lwshop
-            record[4] = json.dumps(record[4])
-            modules.shops.setlwshop(con, record[0], lwshop)
-        except Exception:
-            pass
+        record[4][record[0]] = lwshop
+        modules.shops.setlwshop(con, record[0], lwshop)
 
     try:
         role = modules.shops.fetchrole(con, record[0], lwshop)
