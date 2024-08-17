@@ -191,10 +191,17 @@ def addingitem(con, lwshop):
     print(boxify("Adding Items", width=swidth))
     while True:
         itemname = input("Enter item name : ")
-        if len(itemname)>64:
-            print("The given item name exceeds the character limit of 64")
+        if len(itemname)>30:
+            print("The given item name exceeds the character limit of 30")
         elif len(itemname)==0:
             print("The givem item name is empty")
+        else:
+            break
+        
+    while True:
+        itemlist = modules.shops.fetchitemlist(con, lwshop)
+        if itemname in itemlist:
+            print("The given item is already in the shop")
         else:
             break
 
@@ -230,8 +237,11 @@ def addingitem(con, lwshop):
 
     modules.shops.newitem(con, itemname, price, desc, lwshop)
     modules.shops.additem(con, itemname, lwshop, quantity)
+    print(boxify("Sucessfully added item", width = swidth))
 
 def toremoveitem(con, lwshop):
+    print()
+    print(boxify("Removing an item", width = swidth))
     while True:
         itemname = input("Enter itemname: ")
         itemlist = modules.shops.fetchitemlist(con, lwshop)
@@ -249,6 +259,7 @@ def toremoveitem(con, lwshop):
             break    
 
     modules.shops.removeitem(con, itemname, lwshop, count = quantity)
+    print(boxify("Sucessfully removed.", width = swidth))
 
 def manageshopmenu():
     print("\n")
@@ -308,7 +319,6 @@ def Addmember(con, lwshop):
     addmember(con, member, role, lwshop)
 
 def Removemember(con, lwshop):
-    memberlist = modules.shops.fetchmembers(con, lwshop)
     while True:        
         member = input("Enter member name: ")
         if modules.shops.checkmemberexists(con, member, lwshop):
@@ -319,36 +329,26 @@ def Removemember(con, lwshop):
 
 def Changepermission(con, lwshop):
     memberlist = modules.shops.fetchmembers(con, lwshop)
+
     while True:
-        username = input("Enter username:")        
-        for i in range(len(memberlist)):
-            if memberlist[i][0] == username:
-                found=True
-                break
+        member = input("Enter username : ").lower()
+        if not modules.shops.checkmemberexists(con, member, lwshop):
+            print("There is no such username in our database.")
         else:
-            print("Username not found")
-            found = False
-
-        if found:
             break
 
     while True:
-        role = input("Enter new role:")
-        for i in range(len(memberlist)):
-            if memberlist[i][1] == role:
-                print("The given member is already in the entered role")
-                newrole = False
-            else:
-                newrole = True
-                break
-
-        if newrole:
+        role = input("Enter new role : ").lower()
+        if not checkin(role, ("owner","admin","member")):
+            print("Invalid role has been assigned. Try again.")
+        else:
             break
 
-    row = (username, role)
-    memberlist[i] = row
-    modules.database.puttable(con,lwshop+"_members",memberlist)
+    pos = modules.shops.fetchmemberpos(con, member, lwshop)
+    memberlist[pos] = (member, role)
+    modules.database.puttable(con, f"{lwshop}_members", memberlist)
 
+    print(boxify("Sucessfully updated role of "+member, width = swidth)) 
 
 def ownermenu(con, lwshop):
     while True:
@@ -529,14 +529,24 @@ def main():
     else:
         lwshop = askbranch(con)
         record = list(record)
-        record[4] = eval(record[4])
-        record[4][record[0]] = lwshop
-        record[4] = json.dumps(record[4])
-        modules.shops.setlwshop(con, record[0], lwshop)
-    
-    role = modules.shops.fetchrole(con, record[0], lwshop)
+        try:
+            record[4] = eval(record[4])
+            record[4][record[0]] = lwshop
+            record[4] = json.dumps(record[4])
+            modules.shops.setlwshop(con, record[0], lwshop)
+        except Exception:
+            pass
+
+    try:
+        role = modules.shops.fetchrole(con, record[0], lwshop)
+    except Exception:
+        role = None
+        
     if role == "owner":
         owner_loop(con, record, lwshop)
+    elif role == None:
+        string = "You are not registered in any branch. Please wait"
+        print(boxify(string, width = swidth))
 
     # Disconnecting from mysql
     modules.database.disconnect(con)

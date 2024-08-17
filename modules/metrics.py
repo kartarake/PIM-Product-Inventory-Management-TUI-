@@ -1,6 +1,6 @@
 import shops
 
-def timeperiod(con, lwshop):
+def totaltimeperiod(con, lwshop):
     data = shops.fetchchanges(con, lwshop)
     firstrow = data[0]
     lastrow = data[-1]
@@ -14,6 +14,29 @@ def timeperiod(con, lwshop):
     timeperiod = end - start
     return timeperiod
 
+def days(timestamp):
+    days = int(timestamp[0:4])*365 + int(timestamp[5:7])*30 + int(timestamp[8:10])
+    return days
+
+def timeperiod(con, lwshop, timestamp):
+    # to calculate time period from the given stamp
+    start_time = days(timestamp)
+    itemlist = shops.fetchitemlist(con, lwshop)
+
+    data = shops.fetchchanges(con, lwshop)
+    mapping = {}
+    for item in itemlist:
+        mapping[item] = []
+    for row in data:
+        mapping[row[0]].append(row)
+    end_time_map = {}
+    for key in mapping:
+        end_time_map[key] = days(mapping[key][-1][2])
+    timeperiod_map = {}
+    for key in end_time_map:
+        timeperiod_map[key] = end_time_map[key] - start_time
+
+    return timeperiod_map   
 
 def invturnover(con):
     itemdata=shops.fetchitemdata(con)

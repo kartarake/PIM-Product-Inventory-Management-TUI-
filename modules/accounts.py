@@ -3,7 +3,9 @@ import modules.database as database
 def getuserlist(con):
     # returns a list of all usernames.
     data = database.fetchtable(con, "credentials")
-    usernamelist = [row[0] for row in data]
+    usernamelist = []
+    for row in data:
+        usernamelist.append(row[0])
     return usernamelist
     
 def new_account(con, username, password):

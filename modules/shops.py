@@ -124,6 +124,15 @@ def checkmemberexists(con, member, lwshop):
     else:
         return False
 
+def fetchmemberpos(con, member, lwshop):
+    # To get the index pos of the row of the passed in member
+    data = fetchmembers(con, lwshop)
+    for i in range(len(data)):
+        if data[i][0] == member:
+            return i
+    else:
+        return None
+
 def fetchshops(con):
     # To fetch data from shops table
     rdata = database.fetchtable(con, "shop")
