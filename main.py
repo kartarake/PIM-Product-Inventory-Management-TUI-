@@ -10,7 +10,7 @@ import json
 swidth = 170
 
 
-#dssndjnj
+#testing commit
 def checksame(string1, string2):
     return string1.lower().strip() == string2.lower().strip()
 
