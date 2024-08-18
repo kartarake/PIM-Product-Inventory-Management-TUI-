@@ -68,3 +68,41 @@ def invstockout(con):
     totalitems=sum(listofqty)
     stockoutrate=totalitems/stockout
     return stockoutrate
+
+
+def ABCanalysis(con):
+    shop = input("Enter shopname:")
+    timestamp = int(input("Enter timestamp:"))
+    timeperiod_map = timeperiod(con,shop,timestamp)
+    A=[]
+    B=[]
+    C=[]
+    for i in timeperiod_map:
+        stock = fetchitemquantity(con,i,shop)
+        demand = timeperiod_map[i]
+        megconstant = stock/demand
+        if megconstant == 1:
+            A.append(i)
+        elif megconstant<1:
+            B.append(i)
+        elif megconstant>1:
+            C.append(i)
+
+    if len(A)!=0:
+        print("'A' items:",A)
+        print(len(A),"is properly maintained in your inventory")
+    else:
+        print("No item in your inventory is properly managed")
+    
+    if len(B)!=0:
+        print("'B' items:",B)
+        print("These are the items that has high demand and low stock")
+    else:
+        pass
+    
+    if len(C)!=0:
+        print("'C' items:",C)
+        print("These are the items that has low demand and high stock")
+    else:
+        pass
+        
