@@ -1,4 +1,5 @@
-import shops
+from modules import shops
+from modules.boxify import boxify
 
 def days(timestamp):
     days = int(timestamp[0:4])*365 + int(timestamp[5:7])*30 + int(timestamp[8:10])
@@ -24,9 +25,10 @@ def timeperiod(con, lwshop, timestamp):
 
     return timeperiod_map   
 
-def invturnover(con):
-    itemdata=shops.fetchitemdata(con)
-    changes=shops.fetchchanges(con)
+
+def invturnover(con, lwshop): # ERROR
+    itemdata=shops.fetchitemdata(con, lwshop)
+    changes=shops.fetchchanges(con, lwshop)
     list1=[]
     listofquantity=[]
     for transc in changes:
@@ -50,9 +52,9 @@ def invturnover(con):
     return turnover
 
 
-def invstockout(con):
-    itemdata=shops.fetchitemdata(con)
-    changes=shops.fetchchanges(con)
+def invstockout(con, lwshop): # ERROR
+    itemdata=shops.fetchitemdata(con, lwshop)
+    changes=shops.fetchchanges(con, lwshop)
     stockout=0
     initial=0
     listofqty=[]
@@ -70,15 +72,14 @@ def invstockout(con):
     return stockoutrate
 
 
-def ABCanalysis(con):
-    shop = input("Enter shopname:")
+def ABCanalysis(con, lwshop): # ERROR
     timestamp = int(input("Enter timestamp:"))
-    timeperiod_map = timeperiod(con,shop,timestamp)
+    timeperiod_map = timeperiod(con,lwshop,timestamp)
     A=[]
     B=[]
     C=[]
     for i in timeperiod_map:
-        stock = fetchitemquantity(con,i,shop)
+        stock = shops.fetchitemquantity(con,i,lwshop)
         demand = timeperiod_map[i]
         megconstant = stock/demand
         if megconstant == 1:
@@ -105,4 +106,3 @@ def ABCanalysis(con):
         print("These are the items that has low demand and high stock")
     else:
         pass
-        

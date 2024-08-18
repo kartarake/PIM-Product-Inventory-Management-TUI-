@@ -2,6 +2,7 @@ from modules.boxify import boxify
 
 import modules.accounts
 import modules.database
+import modules.metrics
 import modules.shops
 
 import json
@@ -202,6 +203,8 @@ def addingitem(con, lwshop):
         itemlist = modules.shops.fetchitemlist(con, lwshop)
         if itemname in itemlist:
             print("The given item is already in the shop")
+            print()
+            itemname = input("Enter item name : ")
         else:
             break
 
@@ -371,7 +374,23 @@ def ownermenu(con, lwshop):
         elif choice == "4":
             break
 
-def insightmenu(con):
+def inventoryturnover_tui(con, lwshop):
+    invturnover = modules.metrics.invturnover(con, lwshop)
+    print(boxify("Inventory Turnover Rate", width = swidth))
+    string = f"\nEver since shop started, inventory turnover rate is {invturnover}\n"
+    print(boxify(string, width = swidth))
+
+def stockout_tui(con, lwshop):
+    stockout = modules.metrics.invstockout(con, lwshop)
+    print(boxify("Stockout Rate", width = swidth))
+    string = f"\nEver since shop started, stockout rate is {stockout}\n"
+    print(boxify(string, width = swidth))
+
+def ABCanalysis_tui(con, lwshop):
+    print(boxify("ABC Analysis", width = swidth))
+    modules.metrics.ABCanalysis(con, lwshop)
+
+def insightmenu(con, lwshop):
     menu = """\t[1] Inventory Turnover Rate
 \t[2] Stockout Rate
 \t[3] ABC Analysis
@@ -386,12 +405,15 @@ def insightmenu(con):
             break
 
     if choice == '1':
+        inventoryturnover_tui(con, lwshop)
         return 1
 
     elif choice == '2':
+        stockout_tui(con, lwshop)
         return 1
 
     elif choice == '3':
+        ABCanalysis_tui(con, lwshop)
         return 1
 
     elif choice == '4':
@@ -400,9 +422,9 @@ def insightmenu(con):
     else:
         print("Invalid choice")
 
-def insight_loop(con):
+def insight_loop(con, lwshop):
     while True:
-        signal = insightmenu(con)
+        signal = insightmenu(con, lwshop)
         if signal == 0:
             break
         else:
@@ -504,7 +526,7 @@ def owner_loop(con, record, lwshop):
             ownermenu(con, lwshop)
 
         elif followup == '4': # Insights
-            insight_loop(con)
+            insight_loop(con, lwshop)
 
         elif followup == "3": # Inventory
             pass
