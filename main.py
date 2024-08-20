@@ -433,7 +433,7 @@ def insight_loop(con, lwshop):
 def main_connect():
     # connecting to the mysql database
     mysql_user = "root"
-    mysql_pass = "mysql"
+    mysql_pass = "root"
 
     try: # Not first time
         con = modules.database.connect(
@@ -464,7 +464,6 @@ def main_connect():
 
         username = record[0]
         password = record[1]
-        branchlist = record[4]
         
         record = (record[0],) + record[2:] + ("{}",)
 
@@ -488,9 +487,14 @@ def main_connect():
         
         person = record[0]
         modules.accounts.new_account(con, username, password)
-        
-        for branch in json.loads(branchlist):
-            modules.accounts.addtoshop(con, username, "owner", branch)
+
+        if len(record) == 5:
+            branchlist = record[4]
+            for branch in json.loads(branchlist):
+                modules.accounts.addtoshop(con, username, "owner", branch)
+
+        else:
+            modules.accounts.addtoshop(con, username, "owner", "None")
 
     return con, record
 
@@ -551,6 +555,7 @@ def main():
     else:
         lwshop = askbranch(con)
         record = list(record)
+        record[4] = eval(record[4])
         record[4][record[0]] = lwshop
         modules.shops.setlwshop(con, record[0], lwshop)
 
