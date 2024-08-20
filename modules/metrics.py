@@ -1,6 +1,8 @@
 from modules import shops
 from modules.boxify import boxify
 
+import math
+
 def days(timestamp):
     days = int(timestamp[0:4])*365 + int(timestamp[5:7])*30 + int(timestamp[8:10])
     return days
@@ -52,23 +54,20 @@ def invturnover(con, lwshop): # ERROR
     return turnover
 
 
-def invstockout(con, lwshop): # ERROR
-    itemdata=shops.fetchitemdata(con, lwshop)
-    changes=shops.fetchchanges(con, lwshop)
-    stockout=0
-    initial=0
-    listofqty=[]
-    for rows in changes:
-        countofitems=rows[1]
-        initial=initial+countofitems
-        if initial==0:
-            stockout+=1
-        print('Number of stockouts : ',stockout)
-    for total in itemdata:
-        quantity=total[1]
-        listofqty.append(quantity)
-    totalitems=sum(listofqty)
-    stockoutrate=totalitems/stockout
+def invstockout(con, lwshop):
+    # To calculate the stockout rate
+    itemdata = shops.fetchitemdata(con, lwshop)
+
+    stockout = 0
+    total = len(itemdata)
+    if total == 0:
+        return None
+
+    for row in itemdata:
+        if row[1] == 0:
+            stockout += 1
+    
+    stockoutrate = stockout / total * 100
     return stockoutrate
 
 

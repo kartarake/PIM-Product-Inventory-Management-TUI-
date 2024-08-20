@@ -433,7 +433,7 @@ def insight_loop(con, lwshop):
 def main_connect():
     # connecting to the mysql database
     mysql_user = "root"
-    mysql_pass = "root"
+    mysql_pass = "mysql"
 
     try: # Not first time
         con = modules.database.connect(
