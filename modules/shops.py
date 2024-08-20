@@ -21,6 +21,16 @@ def fetchitemquantity(con, itemname, lwshop):
 
     return row[1]
 
+def fetchitemprice(con, itemname, lwshop):
+    # To get the item price in a shop.
+    data = fetchitemdata(con, lwshop)
+
+    for row in data:
+        if row[0] == itemname:
+            break
+
+    return row[2]
+
 def fetchchanges(con, lwshop):
     # To get the change log in list format.
     data = database.fetchtable(con, f"{lwshop}_changes")
