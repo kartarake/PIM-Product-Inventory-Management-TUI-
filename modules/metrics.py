@@ -3,6 +3,10 @@ from modules.boxify import boxify
 
 import math
 
+# TIMESTAMP FORMAT
+# YYYY-MM-DD
+# 0123456789
+
 def days(timestamp):
     years_to_days = (int(timestamp[0:4])-1) * 365
     months_to_days = (int(timestamp[5:7])-1) * 30
@@ -28,10 +32,10 @@ def timeperiod(con, lwshop, timestamp):
     for key in end_time_map:
         timeperiod_map[key] = end_time_map[key] - start_time
 
-    return timeperiod_map   
+    return timeperiod_map
 
 
-def invturnover(con, lwshop): # ERROR
+"""def invturnover(con, lwshop): # ERROR
     itemdata=shops.fetchitemdata(con, lwshop)
     changes=shops.fetchchanges(con, lwshop)
     list1=[]
@@ -54,7 +58,59 @@ def invturnover(con, lwshop): # ERROR
     totalitems=sum(listofquantity)
     averageinv=totalitems/numofitems
     turnover=cost/averageinv
-    return turnover
+    return turnover"""
+def issameyear(year, timestamp):
+    return int(timestamp[0:4]) == year
+
+def calc_inv_till(con, lwshop, index):
+    changes = shops.fetchchanges(con, lwshop)
+
+    inventory = 0
+    for i in range(index):
+        item = changes[i][0]
+        itemprice = shops.fetchitemprice(con, item, lwshop)
+        change = changes[i][1]
+        inventory += change * itemprice
+    return inventory
+    
+
+def averageinv(con, lwshop, year):
+    changes = shops.fetchchanges(con, lwshop)
+    itemdata = shops.fetchitemdata(con, lwshop)
+
+    for i in list(range(len(changes))):
+        if issameyear(year, changes[i][2]):
+            first_change_rowpos = i + 1
+            break
+    else:
+        return None
+    
+    for i in list(range(len(changes)))[::-1]:
+        if issameyear(year, changes[i][2]):
+            final_change_rowpos = i + 1
+            break
+    else:
+        return None
+    
+    first_inventory = 0
+    for i in range(first_change_rowpos):
+        item = changes[i][0]
+        itemprice = shops.fetchitemprice(con, item, lwshop)
+        change = changes[i][1]
+        first_inventory += change * itemprice
+
+    final_inventory = 0
+    for i in range(final_change_rowpos):
+        item = changes[i][0]
+        itemprice = shops.fetchitemprice(con, item, lwshop)
+        change = changes[i][1]
+        final_inventory += change * itemprice
+
+    average_inventory = final_inventory - first_inventory / 2
+    return average_inventory
+
+def invturnover(con, lwshop):
+    pass
 
 
 def invstockout(con, lwshop):
