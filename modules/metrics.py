@@ -4,8 +4,11 @@ from modules.boxify import boxify
 import math
 
 def days(timestamp):
-    days = int(timestamp[0:4])*365 + int(timestamp[5:7])*30 + int(timestamp[8:10])
-    return days
+    years_to_days = (int(timestamp[0:4])-1) * 365
+    months_to_days = (int(timestamp[5:7])-1) * 30
+    days_convertion = int(timestamp[8:10])
+    total_days = years_to_days + months_to_days + days_convertion
+    return total_days
 
 def timeperiod(con, lwshop, timestamp):
     # to calculate time period from the given stamp
