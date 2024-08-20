@@ -38,6 +38,20 @@ class Test(unittest.TestCase):
         cursor.execute("insert into tn_itemdata values ('h', 10, 80, 'h');")
         cursor.execute("insert into tn_itemdata values ('i', 0, 90, 'i');")
         cursor.execute("insert into tn_itemdata values ('j', 0, 100, 'j');")
+
+        cursor.execute("insert into tn_changes values ('a', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('b', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('c', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('d', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('e', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('f', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('g', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('h', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('i', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('i', -10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('j', 10, '2020-01-01 00:00:00');")
+        cursor.execute("insert into tn_changes values ('j', -10, '2020-01-01 00:00:00');")
+
         self.con.commit()
 
     def tearDown(self) -> None:
@@ -56,6 +70,10 @@ class Test(unittest.TestCase):
         timestamp = "2020-01-01"
         sameyear = modules.metrics.issameyear(year, timestamp)
         self.assertEqual(sameyear, True)
+
+    def test_invturnover(self):
+        invturnover = modules.metrics.invturnover(self.con, self.lwshop)
+        self.assertAlmostEqual(invturnover, 0.53, places=1)
 
     def test_stockoutrate(self):
         stockoutrate = modules.metrics.invstockout(self.con, self.lwshop)
