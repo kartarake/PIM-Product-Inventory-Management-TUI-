@@ -7,7 +7,6 @@ import math
 # YYYY-MM-DD
 # 0123456789
 
-
 def days(timestamp):
     years_to_days = (int(timestamp[0:4])-1) * 365
     months_to_days = (int(timestamp[5:7])-1) * 30
@@ -163,3 +162,51 @@ def ABCanalysis(con, lwshop): # ERROR
         print("These are the items that has low demand and high stock")
     else:
         pass
+
+
+def timestamp_now(con):
+    # Returns the current timestamp
+    # Timestamp format: "YYYY-MM-DD HH:MM:SS"
+    cursor = con.cursor()
+    cursor.execute("select now();")
+    timestamp = str(cursor.fetchall()[0][0])
+    return str(timestamp)
+
+def timediff(timestamp1, timestamp2):
+    in_days1 = days(timestamp1)
+    in_days2 = days(timestamp2)
+    timediff = math.fabs(in_days1 - in_days2)
+    return timediff
+
+def first_time_of_item(con, item, lwshop):
+    changes = shops.fetchchanges(con, lwshop)
+
+    for row in changes:
+        if row[0] == item:
+            return row[2]
+    else:
+        return None
+
+def stockvelocity(con, lwshop):
+    changes = shops.fetchchanges(con, lwshop)
+    itemlist = shops.fetchitemlist(con, lwshop)
+
+    qty_sold = {}
+    velocity = {}
+    for item in itemlist:
+        qty_sold[item] = 0
+        velocity[item] = 0
+
+    for row in changes:
+        change = row[1]
+        if change < 0:
+            item = row[0]
+            qty_sold[item] += math.fabs(change)
+    
+    for item in qty_sold:
+        now = timestamp_now(con)
+        first_time = first_time_of_item(con, item, lwshop)
+        timediff = timediff(now, first_time)
+        velocity[item] = qty_sold[item] / timediff
+
+    return velocity
