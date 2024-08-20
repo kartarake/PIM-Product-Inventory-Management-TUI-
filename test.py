@@ -51,6 +51,12 @@ class Test(unittest.TestCase):
         days = modules.metrics.days(timestamp)
         self.assertEqual(days, 736936)
 
+    def test_issameyear(self):
+        year = 2020
+        timestamp = "2020-01-01"
+        sameyear = modules.metrics.issameyear(year, timestamp)
+        self.assertEqual(sameyear, True)
+
     def test_stockoutrate(self):
         stockoutrate = modules.metrics.invstockout(self.con, self.lwshop)
         self.assertEqual(stockoutrate, 20.0)
