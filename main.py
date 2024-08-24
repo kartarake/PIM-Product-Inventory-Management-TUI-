@@ -188,9 +188,7 @@ def shopmenu():
 
     return choice
 
-def addingitem(con, lwshop):
-    print()
-    print(boxify("Adding Items", width=swidth))
+def ask_itemname():
     while True:
         itemname = input("Enter item name : ")
         if len(itemname)>30:
@@ -199,7 +197,9 @@ def addingitem(con, lwshop):
             print("The givem item name is empty")
         else:
             break
+    return itemname
 
+def ask_quantity():
     while True:
         quantity = input("Enter quantity (units) : ")
         if quantity.isdigit():
@@ -207,7 +207,9 @@ def addingitem(con, lwshop):
             break
         else:
             print("The given string is not an integer")
+    return quantity
 
+def ask_price():
     while True:
         price = input("Enter price per unit : ")
         price = price.replace(',','')
@@ -217,7 +219,9 @@ def addingitem(con, lwshop):
         else:
             price = float(price)
             break
+    return price
 
+def ask_desc():
     print('Enter product description (optional). Just press enter to skip/end')
     para = []
     while True:
@@ -226,11 +230,21 @@ def addingitem(con, lwshop):
             break
         else:
             para.append(line)
-    desc = str('\n'.join(para))
-    if desc == '':
-        desc = None
+    if para == "":
+        return None
+    else:
+        return str("\n".join(para))
 
-    if itemname in modules.shops.fetchitemlist(con, lwshop):
+def addingitem(con, lwshop):
+    print()
+    print(boxify("Adding Items", width=swidth))
+
+    itemname = ask_itemname()
+    quantity = ask_quantity()
+
+    if not itemname in modules.shops.fetchitemlist(con, lwshop): # introducing new item to table.
+        price = ask_price()
+        desc = ask_desc()
         modules.shops.newitem(con, itemname, price, desc, lwshop)
     
     modules.shops.additem(con, itemname, lwshop, quantity)
