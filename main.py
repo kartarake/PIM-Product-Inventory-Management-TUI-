@@ -71,7 +71,6 @@ def askbranchlist():
             break
         else:
             branchlist.append(branch)
-    print()
     return branchlist
 
 def landerpage(): # The first page upon opening the application.
@@ -483,8 +482,8 @@ def main_connect():
         modules.accounts.new_account(con, username, password)
 
         if len(record) == 5:
-            branchlist = record[4]
-            for branch in json.loads(branchlist):
+            branchlist = json.loads(record[3])
+            for branch in branchlist:
                 modules.accounts.addtoshop(con, username, "owner", branch)
 
         else:
