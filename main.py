@@ -8,7 +8,9 @@ import modules.shops
 import json
 
 # Variable Dashboard
-swidth = 170
+swidth = 170    
+mysql_user = "root"
+mysql_pass = "mysql"
 
 
 #testing commit
@@ -198,15 +200,6 @@ def addingitem(con, lwshop):
             print("The givem item name is empty")
         else:
             break
-        
-    while True:
-        itemlist = modules.shops.fetchitemlist(con, lwshop)
-        if itemname in itemlist:
-            print("The given item is already in the shop")
-            print()
-            itemname = input("Enter item name : ")
-        else:
-            break
 
     while True:
         quantity = input("Enter quantity (units) : ")
@@ -238,9 +231,12 @@ def addingitem(con, lwshop):
     if desc == '':
         desc = None
 
-    modules.shops.newitem(con, itemname, price, desc, lwshop)
+    if itemname in modules.shops.fetchitemlist(con, lwshop):
+        modules.shops.newitem(con, itemname, price, desc, lwshop)
+    
     modules.shops.additem(con, itemname, lwshop, quantity)
     print(boxify("Sucessfully added item", width = swidth))
+
 
 def toremoveitem(con, lwshop):
     print()
@@ -432,8 +428,6 @@ def insight_loop(con, lwshop):
 
 def main_connect():
     # connecting to the mysql database
-    mysql_user = "root"
-    mysql_pass = "mysql"
 
     try: # Not first time
         con = modules.database.connect(
