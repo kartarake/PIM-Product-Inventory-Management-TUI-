@@ -28,7 +28,7 @@ def timeperiod(con, lwshop, timestamp):
         mapping[row[0]].append(row)
     end_time_map = {}
     for key in mapping:
-        end_time_map[key] = days(mapping[key][-1][2])
+        end_time_map[key] = days(str(mapping[key][-1][2]))
     timeperiod_map = {}
     for key in end_time_map:
         timeperiod_map[key] = end_time_map[key] - start_time
@@ -128,22 +128,26 @@ def invstockout(con, lwshop):
     return stockoutrate
 
 
-def ABCanalysis(con, lwshop): # ERROR
-    timestamp = int(input("Enter timestamp:"))
+def ABCanalysis(con, lwshop): 
+    timestamp = input("Enter timestamp:")
     timeperiod_map = timeperiod(con,lwshop,timestamp)
     A=[]
     B=[]
     C=[]
+    D=[]
     for i in timeperiod_map:
         stock = shops.fetchitemquantity(con,i,lwshop)
         demand = timeperiod_map[i]
-        megconstant = stock/demand
-        if megconstant == 1:
-            A.append(i)
-        elif megconstant<1:
-            B.append(i)
-        elif megconstant>1:
-            C.append(i)
+        if demand == 0:
+            D.append(i)
+        else:
+            megconstant = stock/demand
+            if megconstant == 1:
+                A.append(i)
+            elif megconstant<1:
+                B.append(i)
+            elif megconstant>1:
+                C.append(i)
 
     if len(A)!=0:
         print("'A' items:",A)
@@ -160,6 +164,12 @@ def ABCanalysis(con, lwshop): # ERROR
     if len(C)!=0:
         print("'C' items:",C)
         print("These are the items that has low demand and high stock")
+    else:
+        pass
+
+    if len(D)!=0:
+        print(D)
+        print("(These items were only recently added and ABC analysis cannot be done)")
     else:
         pass
 
