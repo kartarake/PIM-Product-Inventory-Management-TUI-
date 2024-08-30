@@ -188,6 +188,29 @@ def shopmenu():
 
     return choice
 
+def memshopmenu():
+    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Inventory   |    [4] Insights     |   [5] Back"
+    print(boxify(str1,width = swidth,align = "centre"))
+    while True:
+        choice = input('Enter respective choice to continue : ')
+        if choice in ('1', '2','3','4','5','Add Stock','Insights','Remove Stock','Inventory','Back'):
+            break
+        else:
+            print(boxify('Invalid choice', width = swidth, align = "centre"))
+    
+    if choice == "Add Stock":
+        choice = '1'
+    elif choice == 'Remove Stock':
+        choice = '2'
+    elif choice == 'Insights':
+        choice = '4'
+    elif choice == 'Back':
+        choice = '5'
+    else:
+        pass
+
+    return choice
+
 def ask_itemname():
     while True:
         itemname = input("Enter item name : ")
@@ -739,6 +762,46 @@ def admin_loop(con, record, lwshop):
 
         elif followup == "6": # Exit
             break
+
+        else:
+            print(boxify("Invalid choice", width = swidth))
+
+def member_loop(con, record, lwshop):
+    # main loop for owner
+    person = record[0]
+
+    while True:
+        print("\n")
+        if not record[2]:
+            print(boxify(record[1].title(), width=swidth, align="centre"))
+
+        elif person in record[4]:
+            print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
+
+        else:
+            lwshop = askbranch(con)
+            modules.shops.setlwshop(con, person, lwshop)
+
+            data = modules.shops.fetchshops(con)
+            record = [person]+[data[0], data[1], json.loads(data[2]), json.loads(data[3])]
+            print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
+
+        followup = memshopmenu()
+
+        if followup == '1': # Adding an item
+            addingitem(con, lwshop)
+
+        elif followup == "2": # Removing an item
+            toremoveitem(con, lwshop)
+
+        elif followup == "5": # Exit
+            break
+
+        elif followup == '4': # Insights
+            insight_loop(con, lwshop)
+
+        elif followup == "3": # Inventory
+            display_inventory(con, lwshop)
 
         else:
             print(boxify("Invalid choice", width = swidth))
