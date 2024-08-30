@@ -833,6 +833,8 @@ def main():
         owner_loop(con, record, lwshop)
     elif role == "admin":
         admin_loop(con, record, lwshop)
+    elif role == "member":
+        member_loop(con, record, lwshop)
     elif role == None:
         string = "You are not registered in any branch. Please wait"
         print(boxify(string, width = swidth))
