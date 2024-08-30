@@ -323,9 +323,23 @@ def removemember(con,member,lwshop):
 def Addmember(con, lwshop):
     while True:
         member = input("Enter member name: ")
-        role = input("Enter role: ")
+        role = input("Enter role: ").lower().strip()
         if modules.shops.checkmemberexists(con, member, lwshop):
             print("The given member is already in the shop")
+        elif role not in ("owner", "admin", "member"):
+            print("Invalid role")
+        else:
+            break
+    addmember(con, member, role, lwshop)
+
+def adminAddmember(con, lwshop):
+    while True:
+        member = input("Enter member name: ")
+        role = input("Enter role: ").lower().strip()
+        if modules.shops.checkmemberexists(con, member, lwshop):
+            print("The given member is already in the shop")
+        elif role not in ("member", "admin"):
+            print("Invalid role")
         else:
             break
     addmember(con, member, role, lwshop)
@@ -335,6 +349,18 @@ def Removemember(con, lwshop):
         member = input("Enter member name: ")
         if modules.shops.checkmemberexists(con, member, lwshop):
             break
+        else:
+            print("The given member is not in the shop")
+    removemember(con, member, lwshop)
+
+def adminRemovemember(con, lwshop):
+    while True:        
+        member = input("Enter member name: ")
+        if modules.shops.checkmemberexists(con, member, lwshop):
+            break
+        role = modules.shops.fetchrole(con, member, lwshop)
+        if role in ("owner",):
+            print("Permission denied")
         else:
             print("The given member is not in the shop")
     removemember(con, member, lwshop)
@@ -352,6 +378,31 @@ def Changepermission(con, lwshop):
     while True:
         role = input("Enter new role : ").lower()
         if not checkin(role, ("owner","admin","member")):
+            print("Invalid role has been assigned. Try again.")
+        else:
+            break
+
+    pos = modules.shops.fetchmemberpos(con, member, lwshop)
+    memberlist[pos] = (member, role)
+    modules.database.puttable(con, f"{lwshop}_members", memberlist)
+
+    print(boxify("Sucessfully updated role of "+member, width = swidth))
+
+def adminChangepermission(con, lwshop):
+    memberlist = modules.shops.fetchmembers(con, lwshop)
+
+    while True:
+        member = input("Enter username : ").lower()
+        if not modules.shops.checkmemberexists(con, member, lwshop):
+            print("There is no such username in our database.")
+        elif modules.shops.fetchrole(con, member, lwshop) in ("owner",):
+            print("Permission denied")
+        else:
+            break
+
+    while True:
+        role = input("Enter new role : ").lower()
+        if not checkin(role, ("admin","member")):
             print("Invalid role has been assigned. Try again.")
         else:
             break
@@ -380,6 +431,27 @@ def ownermenu(con, lwshop):
             Removemember(con, lwshop)
         elif choice == "3":
             Changepermission(con, lwshop)
+        elif choice == "4":
+            break
+
+def adminmenu(con, lwshop):
+    while True:
+        print("\n")
+        str1 = "[1] Add member    |    [2] Remove member    |    [3] Change permission    |    [4] Back"
+        print(boxify(str1,width = swidth,align = "centre"))
+        while True:
+            choice = input('Enter respective choice to continue : ')
+            if choice in ('1', '2','3','4','Add member','Change permission','Remove member','Back'):
+                break
+            else:
+                print(boxify('Invalid choice', width = swidth, align = "centre"))
+
+        if choice == "1":
+            adminAddmember(con, lwshop)
+        elif choice == "2":
+            adminRemovemember(con, lwshop)
+        elif choice == "3":
+            adminChangepermission(con, lwshop)
         elif choice == "4":
             break
 
@@ -628,6 +700,49 @@ def owner_loop(con, record, lwshop):
         else:
             print(boxify("Invalid choice", width = swidth))
 
+def admin_loop(con, record, lwshop):
+    # main loop for owner
+    person = record[0]
+
+    while True:
+        print("\n")
+        if not record[2]:
+            print(boxify(record[1].title(), width=swidth, align="centre"))
+
+        elif person in record[4]:
+            print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
+
+        else:
+            lwshop = askbranch(con)
+            modules.shops.setlwshop(con, person, lwshop)
+
+            data = modules.shops.fetchshops(con)
+            record = [person]+[data[0], data[1], json.loads(data[2]), json.loads(data[3])]
+            print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
+
+        followup = shopmenu()
+
+        if followup == '1': # Adding an item
+            addingitem(con, lwshop)
+
+        elif followup == "2": # Removing an item
+            toremoveitem(con, lwshop)
+
+        elif followup == "5": # Manage shop option
+            adminmenu(con, lwshop)
+
+        elif followup == '4': # Insights
+            insight_loop(con, lwshop)
+
+        elif followup == "3": # Inventory
+            display_inventory(con, lwshop)
+
+        elif followup == "6": # Exit
+            break
+
+        else:
+            print(boxify("Invalid choice", width = swidth))
+
 def main():
     # Connecting & logging into account
     con, record = main_connect()
@@ -653,6 +768,8 @@ def main():
         
     if role == "owner":
         owner_loop(con, record, lwshop)
+    elif role == "admin":
+        admin_loop(con, record, lwshop)
     elif role == None:
         string = "You are not registered in any branch. Please wait"
         print(boxify(string, width = swidth))
