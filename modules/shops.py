@@ -7,6 +7,16 @@ def fetchitemdata(con, lwshop):
     data = database.fetchtable(con, f"{lwshop}_itemdata")
     return data
 
+def fetchitemrow(con, lwshop, itemname):
+    # To get the row of the item in the shop.
+    data = fetchitemdata(con, lwshop)
+
+    for row in data:
+        if row[0] == itemname:
+            return row
+    else:
+        return None    
+
 def fetchitemlist(con, lwshop):
     # To get the list of all item names.
     return [row[0] for row in fetchitemdata(con, lwshop)]

@@ -439,6 +439,86 @@ def insight_loop(con, lwshop):
         else:
             pass
 
+def display_iteminfo(con, lwshop, itemname):
+    print()
+    item = modules.shops.fetchitemrow(con, lwshop, itemname)
+    print(boxify(item[0], width = swidth))
+    print("Qty :",item[1],"units")
+    print("Price : ₹",item[2])
+    print("Description :")
+    if item[3] in (None, ""):
+        print("No description available")
+    else:
+        print(item[3])
+    input()
+
+def search_item(con, lwshop):
+    itemname = input("Enter item name : ")
+    itemlist = modules.shops.fetchitemlist(con, lwshop)
+    if itemname in itemlist:
+        display_iteminfo(con, lwshop, itemname)
+    else:
+        print("There is no such item in your inventory.")
+        input("[press enter to continue]")
+
+
+def display_inventory(con, lwshop):
+    print()
+    print()
+    print(boxify("Inventory - " + lwshop.title(), width = swidth))
+    page = 0
+    itemlist = modules.shops.fetchitemlist(con, lwshop)
+    total_pages = len(itemlist) // 10 + 1
+
+    while True:
+        print()
+        pagelist = itemlist[page*10:page*10+10]
+        if pagelist == []:
+            print("No items were found in your inventory.")
+            break
+        
+        print(boxify(f"Page : {page+1} / {total_pages}", width = swidth))
+        for i in range(len(pagelist)):
+            print(f"[{i+1}] {pagelist[i]}")
+        string = f" [{i+2}] Previous Page |  [{i+3}] Next Page  |   [{i+4}] Search  |  [{i+5}] Back"
+        print(boxify(string, width=swidth, align="centre"))
+
+        expected = []
+        for j in range(1,i+6):
+            expected.append(str(j))
+
+        while True:
+            choice = input("Enter respective number to continue : ")
+            if choice in expected:
+                break
+            else:
+                print("Invalid choice")
+
+        if choice == str(i+2):
+            if page > 0:
+                page -= 1
+            else:
+                print("Already on first page")
+                input("[press enter to continue]")
+
+        elif choice == str(i+3):
+            if page < total_pages-1:
+                page += 1
+            else:
+                print("Already on last page")
+                input("[press enter to continue]")
+        
+        elif choice == str(i+4):
+            search_item(con, lwshop)
+
+        elif choice == str(i+5):
+            break
+
+        else:
+            itemname = pagelist[int(choice)-1]
+            display_iteminfo(con, lwshop, itemname)
+
+
 def main_connect():
     # connecting to the mysql database
 
@@ -540,9 +620,9 @@ def owner_loop(con, record, lwshop):
             insight_loop(con, lwshop)
 
         elif followup == "3": # Inventory
-            pass
+            display_inventory(con, lwshop)
 
-        elif followup == "6":
+        elif followup == "6": # Exit
             break
 
         else:
