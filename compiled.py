@@ -201,6 +201,12 @@ def deleterow(con, table, where):
 def disconnect(con):
     con.close()
 
+def fetchtime(con):
+    cursor = con.cursor()
+    cursor.execute("select now();")
+    time = str(cursor.fetchone()[0])
+    return time
+
 #  ____  _                     
 # / ___|| |__   ___  _ __  ___ 
 # \___ \| '_ \ / _ \| '_ \/ __|
@@ -307,7 +313,7 @@ def additem(con, itemname, lwshop, count=1):
     data[i] = row
     puttable(con, f"{lwshop}_itemdata", data)
 
-    now = time.strftime("%Y%m%d%H%M%S")
+    now = fetchtime(con)
     record = (itemname, count, now)
     insertrow(con, f"{lwshop}_changes", record)
 
@@ -326,7 +332,7 @@ def removeitem(con, itemname, lwshop, count = 1):
     data[i] = row
     puttable(con, f"{lwshop}_itemdata", data)
 
-    now = time.strftime("%Y%m%d%H%M%S")
+    now = fetchtime(con)
     record = (itemname, -count, now)
     insertrow(con, f"{lwshop}_changes", record)
 
@@ -1483,8 +1489,8 @@ def main():
     if not record[2]:
         lwshop=None
 
-    elif record[0] in record[4]:
-        lwshop = record[4][record[0]]
+    elif record[0] in eval(record[4]):
+        lwshop = eval(record[4])[record[0]]
 
     else:
         lwshop = askbranch(con)
