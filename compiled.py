@@ -264,7 +264,7 @@ def fetchrole(con, username, lwshop):
         if data[i][0] == username:
             break
     else:
-        raise ValueError("Username not found")
+        return None
 
     return data[i][1]
 
@@ -791,6 +791,7 @@ def signup(con): # The page where they can sign up an account.
             print(boxify("The password does not match"))
     
     new_account(con,username,password)
+    return username
 
 def fsignup():
     print(boxify("Sign Up", width = swidth))
@@ -1305,7 +1306,7 @@ def main_connect():
         data = fetchshops(con)
         record = [person]
         if data[1]:
-            record.extend([data[0], data[1], json.loads(data[2]), json.loads(data[3])])
+            record.extend([data[0], data[1], data[2], data[3]])
         else:
             record.extend([data[0], data[1]])
 
