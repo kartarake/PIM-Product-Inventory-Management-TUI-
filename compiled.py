@@ -1,15 +1,14 @@
 import math
-import time
 import json
 import mysql.connector as sql
 
 
-#  ____            _  __       
-# | __ )  _____  _(_)/ _|_   _ 
-# |  _ \ / _ \ \/ / | |_| | | |
-# | |_) | (_) >  <| |  _| |_| |
-# |____/ \___/_/\_\_|_|  \__, |
-#                        |___/ 
+#  _   _ _   _ _ _ _         
+# | | | | |_(_) (_) |_ _   _ 
+# | | | | __| | | | __| | | |
+# | |_| | |_| | | | |_| |_| |
+#  \___/ \__|_|_|_|\__|\__, |
+#                      |___/ 
 def fillspace(length, string):
     got = len(string)
     need = length
@@ -66,6 +65,74 @@ def boxify(string, width = None, align = "left"):
 
     final = '\n'.join(belt)
     return final
+
+def simplify(string):
+    return string.lower().strip()
+
+def countmap(string):
+    map = {}
+    for char in string:
+        if char in map:
+            map[char] += 1
+        else:
+            map[char] = 1
+    return map
+
+def countmapsimilarity(string1, string2):
+    map1 = countmap(string1)
+    map2 = countmap(string2)
+
+    similarity = 1
+    for key in map1:
+        if key in map2 and map1[key] == map2[key]:
+            similarity *= 1.5
+        elif key in map2:
+            similarity *= 1.25
+        else:
+            pass
+
+    return similarity
+
+def smallstr(string1, string2):
+    if len(string1) < len(string2):
+        return string1
+    else:
+        return string2
+
+def possimilarity(string1, string2):
+    similar = 0
+    for i in range(len(smallstr(string1, string2))):
+        if string1[i] == string2[i]:
+            similar += 1
+
+    return similar/len(string1)*2
+
+def similarity(string1, string2):
+    constant = 1
+    string1 = simplify(string1)
+    string2 = simplify(string2)
+
+    if string1[0] == string2[0]:
+        constant *= 1.5
+    if string1[-1] == string2[-1]:
+        constant *= 1.5
+    constant *= countmapsimilarity(string1, string2)
+    constant *= possimilarity(string1, string2)
+    return constant
+    
+def matchstr(iterable, string):
+    consmap = {}
+    for reference in iterable:
+        wordsimilarity = similarity(string, reference)
+        consmap[reference] = wordsimilarity
+    
+    currentmax = None
+    consmap[currentmax] = -1
+    for key in consmap:
+        if currentmax is None or consmap[key] > consmap[currentmax]:
+            currentmax = key
+
+    return currentmax
 
 #  ____        _        _                    
 # |  _ \  __ _| |_ __ _| |__   __ _ ___  ___ 
@@ -397,7 +464,7 @@ def setlwshop(con, username, branch):
     cursor = con.cursor()
     cursor.execute(f"""update shop
                    set trackers='{trackers}';""")
-    con.commit() 
+    con.commit()
 
 #     _                             _       
 #    / \   ___ ___ ___  _   _ _ __ | |_ ___ 
@@ -1228,14 +1295,24 @@ def search_item(con, lwshop):
     if itemname in itemlist:
         display_iteminfo(con, lwshop, itemname)
     else:
-        print("There is no such item in your inventory.")
-        input("[press enter to continue]")
-
+        possibility = matchstr(itemlist, itemname)
+        print(f"We could not find \"{itemname}\". Did you mean \"{possibility}\"?")
+        choice = input("Enter [y/n] : ").lower().strip()
+        if choice == "y":
+            display_iteminfo(con, lwshop, possibility)
+        elif choice == "n":
+            print("try again..")
+        else:
+            print("Invalid choice")
 
 def display_inventory(con, lwshop):
     print()
     print()
-    print(boxify("Inventory - " + lwshop.title(), width = swidth))
+    if lwshop:
+        print(boxify("Inventory - " + lwshop.title(), width = swidth))
+    else:
+        print(boxify("Inventory", width = swidth))
+
     page = 0
     itemlist = fetchitemlist(con, lwshop)
     total_pages = len(itemlist) // 10 + 1
