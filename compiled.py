@@ -622,12 +622,12 @@ def averageinv(con, lwshop, year):
     average_inventory = final_inventory - first_inventory / 2
     return average_inventory
 
-def invturnover(con, lwshop):
-    cost_of_goods_sold = costofgoods(con, lwshop, 2020)
+def invturnover(con, lwshop, year):
+    cost_of_goods_sold = costofgoods(con, lwshop, year)
     if cost_of_goods_sold == None:
         return None
     
-    averageinventory = averageinv(con, lwshop, 2020)
+    averageinventory = averageinv(con, lwshop, year)
 
     return cost_of_goods_sold / averageinventory
 
@@ -1221,9 +1221,16 @@ def adminmenu(con, lwshop):
             break
 
 def inventoryturnover_tui(con, lwshop):
-    invturnover = invturnover(con, lwshop)
+    while True:
+        year = input("Enter year : ")
+        if len(year) == 4 and year.isdigit():
+            break
+        else:
+            print("Enter valid year.")
+    year = int(year)
+    invturnover_value = invturnover(con, lwshop, year)
     print(boxify("Inventory Turnover Rate", width = swidth))
-    string = f"\nEver since shop started, inventory turnover rate is {invturnover}\n"
+    string = f"\nInventory Turnover Rate in year {year} is {invturnover_value}\n"
     print(boxify(string, width = swidth))
 
 def stockout_tui(con, lwshop):
