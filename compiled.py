@@ -801,6 +801,14 @@ def stockvelocity(con, lwshop):
 
     return velocity
 
+def fetchallyears(con,lwshop):
+    changes = fetchchanges(con,lwshop)
+    years = []
+    for row in changes:
+        if not int(str(row[2])[:4]) in years:
+            years.append(int(str(row[2])[:4]))
+    return years
+
 #  __  __       _       
 # |  \/  | __ _(_)_ __  
 # | |\/| |/ _` | | '_ \ 
@@ -1280,17 +1288,22 @@ def adminmenu(con, lwshop):
             break
 
 def inventoryturnover_tui(con, lwshop):
-    while True:
-        year = input("Enter year : ")
-        if len(year) == 4 and year.isdigit():
-            break
-        else:
-            print("Enter valid year.")
-    year = int(year)
-    invturnover_value = invturnover(con, lwshop, year)
+    print("\n")
     print(boxify("Inventory Turnover Rate", width = swidth))
-    string = f"\nInventory Turnover Rate in year {year} is {invturnover_value}\n"
-    print(boxify(string, width = swidth))
+
+    plots = []
+    years = fetchallyears(con, lwshop)
+    for year in years:
+        plots.append([year, invturnover(con,lwshop,year)])
+
+    if len(plots) <= 2:
+        print(boxify("Add more records for graph", width=swidth))
+    else:
+        string = graphify(plots)
+        print(boxify(string, width = swidth))
+    
+    for set in plots:
+        print(f"{set[0]}:{set[1]}")
 
 def stockout_tui(con, lwshop):
     stockout = invstockout(con, lwshop)
