@@ -134,6 +134,62 @@ def matchstr(iterable, string):
 
     return currentmax
 
+def valuediff(ypos,i):
+    if i>len(ypos)-2:
+        return 0
+    return ypos[i] - ypos[i+1]
+
+def graphify(values):
+    xvalues = []
+    yvalues = []
+    for tuple in values:
+        xvalues.append(tuple[0])
+        yvalues.append(tuple[1])
+
+    valuerange = max(xvalues) - min(xvalues)
+    margin = valuerange / 10    
+    upperlimit = max(yvalues) + margin
+    lowerlimit = min(yvalues) - margin
+
+    graphrange = upperlimit - lowerlimit
+    graphunit = graphrange / 10
+    graphmarked = []
+    for i in range(1,11):
+        graphmarked.append(graphunit*i)
+    
+    ypos = []
+    for i in yvalues:
+        for j in range(len(graphmarked)):
+            if i < graphmarked[j]:
+                ypos.append(len(graphmarked) - 1 - j)
+                break
+    
+    graph = []
+    for i in range(10):
+        graph.append([])
+    
+    for i in range(len(ypos)):
+        column = list(" " * 10)
+        diff = valuediff(ypos,i)
+        if diff == 0:
+            column[ypos[i]] = "_"
+        elif diff > 0:
+            column[ypos[i]] = "/"
+        else:
+            column[ypos[i]] = "\\"
+
+        for j in range(10):
+            graph[j].append(column[j])
+
+    for i in range(len(graph)):
+        graph[i].insert(0, "| ")
+        graph[i] = "".join(graph[i])
+    
+    graph.append("+"+"-"*(len(graph[i])-1))
+
+    graph = "\n".join(graph)
+    return graph
+
 #  ____        _        _                    
 # |  _ \  __ _| |_ __ _| |__   __ _ ___  ___ 
 # | | | |/ _` | __/ _` | '_ \ / _` / __|/ _ \
@@ -703,7 +759,7 @@ def timestamp_now(con):
     timestamp = str(cursor.fetchall()[0][0])
     return str(timestamp)
 
-def timediff(timestamp1, timestamp2):
+def gettimediff(timestamp1, timestamp2):
     in_days1 = days(timestamp1)
     in_days2 = days(timestamp2)
     timediff = math.fabs(in_days1 - in_days2)
@@ -714,7 +770,7 @@ def first_time_of_item(con, item, lwshop):
 
     for row in changes:
         if row[0] == item:
-            return row[2]
+            return str(row[2])
     else:
         return None
 
@@ -733,12 +789,15 @@ def stockvelocity(con, lwshop):
         if change < 0:
             item = row[0]
             qty_sold[item] += math.fabs(change)
-    
+   
     for item in qty_sold:
         now = timestamp_now(con)
         first_time = first_time_of_item(con, item, lwshop)
-        timediff = timediff(now, first_time)
-        velocity[item] = qty_sold[item] / timediff
+        timediff = gettimediff(now, first_time)
+        if timediff:
+            velocity[item] = qty_sold[item] / timediff
+        else:
+            velocity[item] = None
 
     return velocity
 
@@ -1243,16 +1302,27 @@ def ABCanalysis_tui(con, lwshop):
     print(boxify("ABC Analysis", width = swidth))
     ABCanalysis(con, lwshop)
 
+def stockvelocity_tui(con, lwshop):
+    print(boxify("Stock Velocity", width = swidth))
+    velocity = stockvelocity(con, lwshop)
+    for key in velocity:
+        if velocity[key] == None:
+            print(key, ":", "No value yet")
+        else:
+            print(key, ":", velocity[key], "units/day")
+
 def insightmenu(con, lwshop):
+    print("\n")
     menu = """\t[1] Inventory Turnover Rate
 \t[2] Stockout Rate
 \t[3] ABC Analysis
-\t[4] Back"""
+\t[4] Stock Velocity
+\t[5] Back"""
     while True:
         print(boxify("Insights available", width = swidth))
         print(menu)
         choice = input("Enter respective number : ")
-        if not choice in ("1", "2", "3", "4"):
+        if not choice in ("1", "2", "3", "4", "5"):
             print("Invalid choice")
         else:
             break
@@ -1270,6 +1340,10 @@ def insightmenu(con, lwshop):
         return 1
 
     elif choice == '4':
+        stockvelocity_tui(con, lwshop)
+        return 1
+
+    elif choice == '5':
         return 0
 
     else:
