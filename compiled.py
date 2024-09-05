@@ -821,7 +821,6 @@ mysql_user = "root"
 mysql_pass = "mysql"
 
 
-#testing commit
 def checksame(string1, string2):
     return string1.lower().strip() == string2.lower().strip()
 
