@@ -816,7 +816,7 @@ def fetchallyears(con,lwshop):
 # |_|  |_|\__,_|_|_| |_|
 
 # Variable Dashboard
-swidth = 170    
+swidth = 153  
 mysql_user = "root"
 mysql_pass = "mysql"
 
@@ -972,7 +972,7 @@ def login(con):
     return username
 
 def shopmenu():
-    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Inventory   |    [4] Insights     |   [5] Manage shop   |   [6] Back"
+    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Inventory   |    [4] Insights     |   [5] Manage shop   |   [6] Exit"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
@@ -997,7 +997,7 @@ def shopmenu():
     return choice
 
 def memshopmenu():
-    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Inventory   |    [4] Insights     |   [5] Back"
+    str1 = "[1] Add Stock    |    [2] Remove Stock     |    [3] Inventory   |    [4] Insight     |     [5] Switch Branch     |    [6] Exit"
     print(boxify(str1,width = swidth,align = "centre"))
     while True:
         choice = input('Enter respective choice to continue : ')
@@ -1012,8 +1012,10 @@ def memshopmenu():
         choice = '2'
     elif choice == 'Insights':
         choice = '4'
-    elif choice == 'Back':
+    elif choice == 'Switch Branch':
         choice = '5'
+    elif choice == 'Exit':
+        choice = '6'
     else:
         pass
 
@@ -1135,14 +1137,32 @@ def askbranch(con):
     print()
     return branch
 
-def exportlog(con):
+def exportlog(con, lwshop):
     f = open("log.txt","w")
-    log = fetchchanges(con)
+    log = fetchchanges(con, lwshop)
     for i in log:
-        f.write(f"[{i[2]}] Count of item {i[0]} changed by {i[1]}") 
+        f.write(f"[{i[2]}] Count of item {i[0]} changed by {i[1]}\n") 
     f.close()
     print(boxify("Wrote log to log.txt", width=swidth))
     print()
+
+def changeworkingbranch(con, person, lwshop):
+    branch = askbranch(con)
+    lwshop = branch
+    setlwshop(con, person, lwshop)
+    print(boxify("Sucessfully changed working branch", width=swidth))
+    print()
+    
+    role = fetchrole(con, person, lwshop)
+    if role == "owner":
+        owner_loop(con, recordbackup.copy(), lwshop)
+    elif role == "admin":
+        admin_loop(con, recordbackup.copy(), lwshop)
+    elif role == "member":
+        member_loop(con, recordbackup.copy(), lwshop)
+    else:
+        string = "You are not registered in this branch. Ask branch admin to whitelist you"
+        print(boxify(string, width = swidth))
 
 def addmember(con,member,role,lwshop):
     record = ( member, role)
@@ -1251,11 +1271,10 @@ def ownermenu(con, lwshop):
         print(boxify(str1,width = swidth,align = "centre"))
         while True:
             choice = input('Enter respective choice to continue : ')
-            if choice in ('1', '2','3','4','Add member','Change permission','Remove member','Back'):
+            if choice in ('1', '2','3','4'):
                 break
             else:
                 print(boxify('Invalid choice', width = swidth, align = "centre"))
-
         if choice == "1":
             Addmember(con, lwshop)
         elif choice == "2":
@@ -1272,11 +1291,10 @@ def adminmenu(con, lwshop):
         print(boxify(str1,width = swidth,align = "centre"))
         while True:
             choice = input('Enter respective choice to continue : ')
-            if choice in ('1', '2','3','4','Add member','Change permission','Remove member','Back'):
+            if choice in ('1', '2','3','4'):
                 break
             else:
                 print(boxify('Invalid choice', width = swidth, align = "centre"))
-
         if choice == "1":
             adminAddmember(con, lwshop)
         elif choice == "2":
@@ -1525,6 +1543,39 @@ def main_connect():
 
     return con, record
 
+def manageshoploop(con, lwshop, person):
+    while True:
+        followup1 = manageshopmenu()
+        if followup1 == "1":
+            changeworkingbranch(con, person, lwshop)
+        elif followup1 == "2":
+            ownermenu(con, lwshop)
+        elif followup1 == "3":
+            exportlog(con, lwshop)
+        elif followup1 == "4":
+            break
+        else:
+            print("Invalid Input!!")
+
+def adminmanageshoploop(con, lwshop, person):
+    while True:
+        followup1 = manageshopmenu()
+        if followup1 == "1":
+            changeworkingbranch(con, person, lwshop)
+        elif followup1 == "2":
+            adminmenu(con, lwshop)
+        elif followup1 == "3":
+            exportlog(con, lwshop)
+        elif followup1 == "4":
+            break
+        else:
+            print("Invalid Input!!")
+
+def convifnot(record):
+    if type(record[4]) == str:
+        record[4] = json.loads(record[4])
+    return record[4]
+
 def owner_loop(con, record, lwshop):
     # main loop for owner
     person = record[0]
@@ -1534,7 +1585,7 @@ def owner_loop(con, record, lwshop):
         if not record[2]:
             print(boxify(record[1].title(), width=swidth, align="centre"))
 
-        elif person in record[4]:
+        elif person in convifnot(record):
             print(boxify(record[1].title() + "-" + lwshop.title(), width=swidth, align="centre"))
 
         else:
@@ -1554,7 +1605,7 @@ def owner_loop(con, record, lwshop):
             toremoveitem(con, lwshop)
 
         elif followup == "5": # Manage shop option
-            ownermenu(con, lwshop)
+            manageshoploop(con, lwshop, person)
 
         elif followup == '4': # Insights
             insight_loop(con, lwshop)
@@ -1597,7 +1648,7 @@ def admin_loop(con, record, lwshop):
             toremoveitem(con, lwshop)
 
         elif followup == "5": # Manage shop option
-            adminmenu(con, lwshop)
+            adminmanageshoploop(con, lwshop, person)
 
         elif followup == '4': # Insights
             insight_loop(con, lwshop)
@@ -1639,7 +1690,10 @@ def member_loop(con, record, lwshop):
         elif followup == "2": # Removing an item
             toremoveitem(con, lwshop)
 
-        elif followup == "5": # Exit
+        elif followup == "5": # Switch Branch
+            changeworkingbranch(con, person, lwshop)
+
+        elif followup == "6": # Exit
             break
 
         elif followup == '4': # Insights
@@ -1653,7 +1707,11 @@ def member_loop(con, record, lwshop):
 
 def main():
     # Connecting & logging into account
+    global recordbackup
+
     con, record = main_connect()
+    print(boxify("Sucessfully connected to the application!", width=swidth))
+    print("\n")
 
     # Main loop
     if not record[2]:
@@ -1673,6 +1731,8 @@ def main():
         role = fetchrole(con, record[0], lwshop)
     except Exception:
         role = None
+
+    recordbackup = record.copy()
         
     if role == "owner":
         owner_loop(con, record, lwshop)
@@ -1681,7 +1741,7 @@ def main():
     elif role == "member":
         member_loop(con, record, lwshop)
     elif role == None:
-        string = "You are not registered in any branch. Please wait"
+        string = "You are not registered in this branch. Ask branch admin to whitelist you"
         print(boxify(string, width = swidth))
 
     # Disconnecting from mysql
