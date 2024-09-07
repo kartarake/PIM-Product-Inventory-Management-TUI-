@@ -834,7 +834,7 @@ def fetchallyears(con,lwshop):
 # Variable Dashboard
 swidth = 153  
 mysql_user = "root"
-mysql_pass = "mysql"
+mysql_pass = "root"
 
 
 def checksame(string1, string2):
